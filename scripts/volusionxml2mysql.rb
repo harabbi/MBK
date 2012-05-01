@@ -43,13 +43,8 @@ def get_table_flds_from_xml(doc, tbl)
 end
 #_______________________________________________________________________________
 
-#check for correct number of command line parameters
-if ARGV.size < 1  then
-   puts "\nUsage: #{__FILE__} <Input xml directory>\n\n"
-   exit -1
-end
 
-xmldir = ARGV[0].to_s
+xmldir = "#{Dir.pwd}/#{MBK_VOLUSION_OUTPUT_DIR}"
 Dir.chdir(xmldir)
 Dir.glob("*.xml").each() { |xml_document|
   f = File.open("#{xmldir}/#{xml_document}"); doc = Nokogiri::XML(f); f.close
