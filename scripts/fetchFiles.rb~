@@ -1,0 +1,11 @@
+a.get('http://www.modeltrainstuff.com/admin') do |page| 
+	page.form_with(:name => 'loginform') do |f| 
+	       	f.email = "philz@modeltrainstuff.com"
+		f.password = "voodoo55"
+	end.click_button
+end
+
+IO.readlines("tablesToDownload").each do |filename|
+	puts filename
+	a.download(filename.strip, File.open(filename.match(/=(.*?)_/)[1], "w"))
+end
