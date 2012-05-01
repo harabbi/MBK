@@ -1,7 +1,15 @@
 #!/usr/bin/env ruby
+$: << File.dirname(__FILE__) unless $:.include? File.dirname(__FILE__)
+
 require "rubygems"
 gem "selenium-client", ">=1.2.16"
-require "selenium/client"
+begin
+  require "selenium/client"
+rescue
+  put "You must install the selenium gem, try....>gem install selenium-client"
+  exit -1
+end
+require "mbk_params.rb"
 
 begin
   #system("java -jar selenium-server-standalone-2.21.0.jar [-timeout 3600] &")
@@ -9,14 +17,14 @@ begin
 		:host => "localhost",
 		:port => 4444,
 		:browser => "*firefox",
-		:url => "http://www.modeltrainstuff.com",
+		:url => MBK_VOLUSION_URL,
 		:timeout_in_second => 6000
 
 	puts "Browser created..."
 	@browser.start_new_browser_session
 	@browser.open "admin"
-	@browser.type "name=email", "philz@modeltrainstuff.com"
-	@browser.type "name=password", "voodoo55"
+	@browser.type "name=email", MBK_VOLUSION_USER
+	@browser.type "name=password", MBK_VOLUSION_PASS
 	@browser.click "name=imageField2", :wait_for => :page	
 	
   IO.readlines("tablesToDownload").each do |table_name|

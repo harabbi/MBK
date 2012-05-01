@@ -1,3 +1,7 @@
+you will need the following gems installed
+>gem install mechanize
+>gem install selenium-client
+
 1- Type this command
 	cp wholeTableList.master tablesToDownload
 

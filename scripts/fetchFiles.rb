@@ -1,17 +1,26 @@
+$: << File.dirname(__FILE__) unless $:.include? File.dirname(__FILE__)
+
 require 'rubygems'
-require 'mechanize'
+begin
+  require 'mechanize'
+rescue
+  puts "you must install the mechanize gem, try....>gem instal mechanize"
+  exit -1
+end
+require 'mbk_params.rb'
 
 a = Mechanize.new
 
-a.get('http://www.modeltrainstuff.com/admin') do |page| 
+a.get("#{MBK_VOLUSION_URL}/admin") do |page| 
 	page.form_with(:name => 'loginform') do |f| 
-	       	f.email = "philz@modeltrainstuff.com"
-		f.password = "voodoo55"
+	       	f.email = MBK_VOLUSION_USER
+		f.password = MBK_VOLUSION_PASS
 	end.click_button
 end
 
+Dir.mkdir(MBK_VOLUSION_OUTPUT_DIR) unless File.exists?(MBK_VOLUSION_OUTPUT_DIR)
 IO.readlines("filesToDownload").each do |filename|
-	puts filename
+	puts "Downloading...#{filename}"
 	a.download(filename.strip, File.open( 
-		"fetched_xml/" + filename.match(/=(.*?)_/)[1] + ".xml", "w"))
+		"#{MBK_VOLUSION_OUTPUT_DIR}/" + filename.match(/=(.*?)_/)[1] + ".xml", "w"))
 end
