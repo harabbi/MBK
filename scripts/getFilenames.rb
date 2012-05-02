@@ -3,12 +3,7 @@ $: << File.dirname(__FILE__) unless $:.include? File.dirname(__FILE__)
 
 require "rubygems"
 gem "selenium-client", ">=1.2.16"
-begin
-  require "selenium/client"
-rescue
-  put "You must install the selenium gem, try....>gem install selenium-client"
-  exit -1
-end
+require "selenium/client"
 require "mbk_params.rb"
 
 begin

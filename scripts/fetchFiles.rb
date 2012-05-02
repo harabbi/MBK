@@ -1,12 +1,7 @@
 $: << File.dirname(__FILE__) unless $:.include? File.dirname(__FILE__)
 
 require 'rubygems'
-begin
-  require 'mechanize'
-rescue
-  puts "you must install the mechanize gem, try....>gem instal mechanize"
-  exit -1
-end
+require 'mechanize'
 require 'mbk_params.rb'
 
 a = Mechanize.new
