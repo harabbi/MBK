@@ -1,9 +1,8 @@
 $: << File.dirname(__FILE__) unless $:.include? File.dirname(__FILE__)
 
 require 'nokogiri'
+require 'active_record'
 require 'mbk_params.rb'
-#require 'mbk_mysql.rb'
-
 
 #this utility assumes the output xml is from volusions custom export utility of the form...
 # <xml>
@@ -42,7 +41,24 @@ def get_table_flds_from_xml(doc, tbl)
   return flds
 end
 #_______________________________________________________________________________
+ActiveRecord::Base.establish_connection(
+  :adapter  => "mysql2",
+  :host     => MBK_DB_HOST,
+  :username => MBK_DB_USER,
+  :password => MBK_DB_PASS,
+  :database => "mysql"
+)
+$con = ActiveRecord::Base.connection
 
+if ARGV.size < 1 then
+  puts "\n\nUsage: #{__FILE__} <output_database name>"
+  exit -1
+end
+
+export_table = ARGV[0].to_s
+
+$con.execute("create database if not exists #{export_table}")
+$con.execute("use #{export_table}")
 
 xmldir = "#{Dir.pwd}/#{MBK_VOLUSION_OUTPUT_DIR}"
 Dir.chdir(xmldir)
@@ -53,17 +69,19 @@ Dir.glob("*.xml").each() { |xml_document|
   flds     = get_table_flds_from_xml(doc, tbl_name)
 
   s = "create table if not exists #{tbl_name}("
-  flds.collect() { |x| s << "#{x} varchar(4096)," }
+  flds.collect() { |x| s << "#{x} text," }
+  s.chomp!(",")
   s << ");"
-  #create table
-  puts s
-  
+
+  $con.execute("#{s}")
+
   s = ""
   doc.xpath("//#{tbl_name}").each { |node|
     s =  "insert into #{tbl_name} values ("
-    node.children.collect() { |x|  s << "'#{x.text}', " }
+    node.children.collect() { |x|  s << "#{$con.quote(x.text)}," }
+    s.chomp!(",")
     s << ");"
-    #insert into DB
-    puts s
+    #insert into DB table
+    $con.execute("#{s}")
   }
 }
