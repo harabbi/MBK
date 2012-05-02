@@ -1,6 +1,8 @@
-you will need the following gems installed
->gem install mechanize
->gem install selenium-client
+Type...
+	>bundle install
+	edit your ~/.bashrc or ~/.bash_profile to set the environment variables needed in scripts/mbk_params.rb
+	>./export_volusion_xml.sh
+
 
 1- Type this command
 	cp wholeTableList.master tablesToDownload
