@@ -13,7 +13,7 @@ begin
     :port => 4444,
     :browser => "*firefox",
     :url => MBK_VOLUSION_URL,
-    :timeout_in_second => 6000
+    :timeout_in_second => 36000
   
   puts "Browser created..."
   @browser.start_new_browser_session
@@ -56,7 +56,7 @@ begin
     end
     columnFile.puts ""
 
-    @browser.click "css=span.a65chrome_btn_small.save > a > span", :wait_for => :page
+    @browser.click "css=span.a65chrome_btn_small.save > a > span", :wait_for => :page, :timeout_in_seconds => 36000
     @filepath = @browser.get_attribute "//td/a@href"
     puts "Found this file <#{@filepath.to_s}> for #{table_name.strip}!"
     fileFile.puts(@filepath.to_s)
