@@ -57,6 +57,7 @@ end
 
 export_table = ARGV[0].to_s
 
+$con.execute("drop database if exists #{export_table}")
 $con.execute("create database if not exists #{export_table}")
 $con.execute("use #{export_table}")
 
@@ -70,18 +71,21 @@ Dir.glob("*.xml").each() { |xml_document|
 
   s = "create table if not exists #{tbl_name}("
   flds.collect() { |x| s << "#{x} text," }
-  s.chomp!(",")
-  s << ");"
-
+  s.chomp!(",");  s << ");"
+  puts "\nCreating table #{tbl_name}...\n#{s}\n\n"
   $con.execute("#{s}")
 
   s = ""
   doc.xpath("//#{tbl_name}").each { |node|
     s =  "insert into #{tbl_name} values ("
     node.children.collect() { |x|  s << "#{$con.quote(x.text)}," }
-    s.chomp!(",")
-    s << ");"
-    #insert into DB table
-    $con.execute("#{s}")
+    s.chomp!(",");  s << ");"
+    begin
+     # puts "#{s[0..100]}"
+      $con.execute("#{s}")
+    rescue
+      puts "ERROR inserting row!"
+      puts $!
+    end
   }
 }
