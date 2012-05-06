@@ -38,9 +38,9 @@ while(true)
   puts "  Scraping..."
   passwordFile = File.open("passwords", "a")
   500.times.each do |row|
-    id  = doc.xpath("//table[@id='tableviewer']/tbody/tr[#{(row + 1).to_s}]/td[1]").text 
-    key = doc.xpath("//table[@id='tableviewer']/tbody/tr[#{(row + 1).to_s}]/td[2]").text 
-    pwd = doc.xpath("//table[@id='tableviewer']/tbody/tr[#{(row + 1).to_s}]/td[4]").text 
+    id  = doc.xpath("//table[@id='tableviewer']/tbody/tr[#{(row + 2).to_s}]/td[1]").text 
+    key = doc.xpath("//table[@id='tableviewer']/tbody/tr[#{(row + 2).to_s}]/td[2]").text 
+    pwd = doc.xpath("//table[@id='tableviewer']/tbody/tr[#{(row + 2).to_s}]/td[4]").text 
     passwordFile.puts "#{id},#{key},#{pwd}"
   end
   passwordFile.close()
