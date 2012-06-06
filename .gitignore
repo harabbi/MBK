@@ -17,6 +17,7 @@ fetched_xml
 .yardoc
 _yardoc
 doc/
+data/
 filesToDownload
 volusion_exported_xml
 columnData

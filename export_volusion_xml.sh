@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #check for the output database name parameter
-if [ $# -ne 2 ]
+if [ $# -ne 1 ]
 then
   echo "Usage: `$0` {output_database_name}"
   exit
