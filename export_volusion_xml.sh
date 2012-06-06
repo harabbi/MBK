@@ -8,10 +8,7 @@ then
 fi
 
 rm -rf volusion_exported_xml
-rm filesToDownload
-java -jar selenium-server-standalone-2.21.0.jar [-timeout 3600] &
-sleep 5
-ruby scripts/getFilenames.rb
-ruby scripts/fetchFiles.rb
+ruby scripts/download_xmls.rb
+ruby scripts/passwords.rb
 ruby scripts/volusionxml2mysql.rb $1
 
