@@ -3,6 +3,7 @@ $: << File.dirname(__FILE__) unless $:.include? File.dirname(__FILE__)
 require 'nokogiri'
 require 'active_record'
 require 'mbk_params.rb'
+require 'logger'
 
 #this utility assumes the output xml is from volusions custom export utility of the form...
 # <xml>
@@ -55,6 +56,8 @@ if ARGV.size < 1 then
   exit -1
 end
 
+log = Logger.new(STDOUT)
+
 export_table = ARGV[0].to_s
 
 $con.execute("drop database if exists #{export_table}")
@@ -62,18 +65,18 @@ $con.execute("create database if not exists #{export_table}")
 $con.execute("use #{export_table}")
 
 xmldir = "#{Dir.pwd}/#{MBK_VOLUSION_OUTPUT_DIR}"
-puts "Entering #{xmldir}..."
+log.debug "Entering #{xmldir}..."
 Dir.chdir(xmldir)
 Dir.glob("*.xml").each() { |xml_document|
   f = File.open("#{xmldir}/#{xml_document}"); doc = Nokogiri::XML(f); f.close
-  puts "Parsing file #{xml_document}..."
+  log.debug "Parsing file #{xml_document}..."
   tbl_name = get_table_name_from_xml(doc)
   flds     = get_table_flds_from_xml(doc, tbl_name)
 
   s = "create table if not exists #{tbl_name}("
   flds.collect() { |x| s << "#{x} text," }
   s.chomp!(",");  s << ");"
-  puts "\nCreating table #{tbl_name}...\n#{s}\n\n"
+  log.debug "Creating table #{tbl_name}...#{s}"
   $con.execute("#{s}")
 
   s = ""
