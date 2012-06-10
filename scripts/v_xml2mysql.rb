@@ -85,7 +85,6 @@ Dir.glob("*.xml").each() { |xml_document|
     node.children.collect() { |x|  s << "#{$con.quote(x.text)}," }
     s.chomp!(",");  s << ");"
     begin
-     # puts "#{s[0..100]}"
       $con.execute("#{s}")
     rescue
       puts "ERROR inserting row!"
