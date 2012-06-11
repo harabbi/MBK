@@ -5,6 +5,7 @@ require 'active_record'
 require 'mbk_params.rb'
 require 'mbk_utils.rb'
 require 'logger'
+require 'pidfile'
 
 #this utility assumes the output xml is from volusions custom export utility of the form...
 # <xml>
@@ -56,7 +57,7 @@ if ARGV.size < 1 then
   puts "\n\nUsage: #{__FILE__} <output_database name>"
   exit -1
 end
-
+pf = PidFile.new
 log = Logger.new(STDOUT)
 
 export_table = ARGV[0].to_s
