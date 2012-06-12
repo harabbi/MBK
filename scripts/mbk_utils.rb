@@ -36,7 +36,7 @@ def mbk_volusion_login_with_selenium(browser)
 end
 #_______________________________________________________________________________
 def mbk_create_dir(d)
-  Dir.mkdir(d) unless File.exists?(d)
+  FileUtils.makedirs(d) unless File.exists?(d)
 end
 #_______________________________________________________________________________
 def mbk_db_connect()
