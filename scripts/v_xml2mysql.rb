@@ -44,18 +44,10 @@ def get_table_flds_from_xml(doc, tbl)
   return flds
 end
 #_______________________________________________________________________________
-ActiveRecord::Base.establish_connection(
-  :adapter  => "mysql2",
-  :host     => MBK_DB_HOST,
-  :username => MBK_DB_USER,
-  :password => MBK_DB_PASS,
-  :database => "mysql"
-)
-$con = ActiveRecord::Base.connection
 
-pf = PidFile.new
-log = Syslogger.new("#{__FILE__}", Syslog::LOG_PID, Syslog::LOG_LOCAL0)
-log.level = Logger::INFO
+
+mbk_app_init(__FILE__)
+$con = mbk_db_connect()
 
 export_table = ARGV[0].to_s
 export_table = "mbk_volusion_export_#{Time.now.strftime("%Y%m%d")}" if export_table.length < 1
@@ -69,12 +61,12 @@ MBK_XML_FOOTER = "</Export>"
 MBK_XML_MAX_FILE_SIZE ||= "20000000"
 MBK_XML_PART_DIR ||= "xml_part"
 
-xmldir = "#{Dir.pwd}/#{MBK_VOLUSION_OUTPUT_DIR}"
+xmldir = "#{Dir.pwd}/#{MBK_DATA_DIR}/volusion/export/"
 xmlpartdir = "#{xmldir}/#{MBK_XML_PART_DIR}"
 
 #split xml into parts place them in xmlpartdir
-Dir.chdir(xmldir)
 mbk_create_dir(xmlpartdir)
+Dir.chdir(xmldir)
 Dir.glob("*.xml").each() { |xml_document|
    tbl =  xml_document.split(".").first
    f = File.open(xml_document, "r")
@@ -100,31 +92,31 @@ Dir.glob("*.xml").each() { |xml_document|
    File.delete(xml_document)
 }
 
-
-log.debug "Entering #{xmlpartdir}..."
+#read split xml in xmlpartdir and insert into mysql
+$log.debug "Entering #{xmlpartdir}..."
 Dir.chdir(xmlpartdir)
 Dir.glob("*.part").each() { |xml_document|
   f = File.open("#{xmlpartdir}/#{xml_document}"); doc = Nokogiri::XML(f); f.close
-  log.info "Parsing file #{xml_document}..."
+  $log.info "Parsing file #{xml_document}..."
   tbl_name = get_table_name_from_xml(doc)
   flds     = get_table_flds_from_xml(doc, tbl_name)
 
   s = "create table if not exists #{tbl_name}("
   flds.collect() { |x| s << "#{x} text," }
-  s.chomp!(",");  s << ");"
-  log.info "Creating table #{tbl_name}...#{s}"
+  s <<" `ready_to_import` BOOLEAN DEFAULT FALSE, `updated_at` TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, `created_at` DATETIME DEFAULT NULL);"
+  $log.info "Creating table #{tbl_name}...#{s}"
   $con.execute("#{s}")
 
   s = ""
   doc.xpath("//#{tbl_name}").each { |node|
     s =  "insert into #{tbl_name} values ("
     node.children.collect() { |x|  s << "#{$con.quote(x.text)}," }
-    s.chomp!(",");  s << ");"
+    s << "false, NOW(), NOW());"
     begin
       $con.execute("#{s}")
     rescue
-      puts "ERROR inserting row!"
-      puts $!
+      $log.info "ERROR inserting row!"
+      $log.info $!
     end
   }
   File.delete(xml_document)
