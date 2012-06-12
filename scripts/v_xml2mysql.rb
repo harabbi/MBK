@@ -66,6 +66,8 @@ $con.execute("use #{export_table}")
 
 MBK_XML_HEADER = "<?xml version=\"1.0\" encoding=\"iso-8859-1\"?><Export>"
 MBK_XML_FOOTER = "</Export>"
+MBK_XML_MAX_FILE_SIZE ||= "20000000"
+MBK_XML_PART_DIR ||= "xml_part"
 
 xmldir = "#{Dir.pwd}/#{MBK_VOLUSION_OUTPUT_DIR}"
 xmlpartdir = "#{xmldir}/#{MBK_XML_PART_DIR}"
