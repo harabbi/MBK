@@ -15,8 +15,6 @@ end
 
 Dir.mkdir(MBK_VOLUSION_OUTPUT_DIR) unless File.exists?(MBK_VOLUSION_OUTPUT_DIR)
 
-fileFile = File.open("filesToDownload", "w")
-columnFile = File.open("columnData", "w")
 IO.readlines("tablesToDownload").each do |table_name|
 	puts "Processing #{table_name.strip}..."
 
