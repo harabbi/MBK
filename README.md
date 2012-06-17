@@ -1,20 +1,15 @@
-Type...
-	>bundle install
-	edit your ~/.bashrc or ~/.bash_profile to set the environment variables needed in scripts/mbk_params.rb
-	>./export_volusion_xml.sh
+1- Type this d
+        bundle install
 
+2- edit your ~/.bashrc or ~/.bash_profile to set the environment variables needed in scripts/mbk_params.rb
 
-1- Type this command
+3- Type this command
 	cp wholeTableList.master tablesToDownload
 
-2- Edit tableToDownload to include only the tables wanted
+4- Edit tableToDownload to include only the tables wanted
 
-3- Start the selenium server with this command (run in background, modify timeout if needed)
-	java -jar selenium-server-standalone-2.21.0.jar [-timeout 3600] &
+5- Type this command
+        export_volusion_xml.sh <output database name>
 
-4- Execute this script to populate the filename file:
-	ruby scripts/getFilenames.rb
-
-5- Execute this script to pull down the XMLs
 
 Enjoy!

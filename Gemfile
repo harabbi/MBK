@@ -3,4 +3,6 @@ gem "nokogiri"
 gem 'mysql2'
 gem 'activerecord'
 gem 'mechanize'
-gem 'selenium-client'
+gem 'activerecord-fast-import2'
+gem 'pidfile'
+gem 'syslogger'

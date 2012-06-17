@@ -1,14 +1,3 @@
 #!/bin/sh
-
-#check for the output database name parameter
-if [ $# -ne 2 ]
-then
-  echo "Usage: `$0` {output_database_name}"
-  exit
-fi
-
-rm -rf volusion_exported_xml
-ruby scripts/download_xmls.rb
-ruby scripts/passwords.rb
-ruby scripts/volusionxml2mysql.rb $1
-
+ruby scripts/v_site2xml.rb
+ruby scripts/v_xml2mysql.rb $1
