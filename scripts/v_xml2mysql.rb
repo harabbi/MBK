@@ -68,9 +68,10 @@ xmlpartdir = "#{xmldir}/#{MBK_XML_PART_DIR}"
 mbk_create_dir(xmlpartdir)
 Dir.chdir(xmldir)
 Dir.glob("*.xml").each() { |xml_document|
-   tbl =  xml_document.split(".").first
-   f = File.open(xml_document, "r")
-   (f.size/MBK_XML_MAX_FILE_SIZE.to_i).floor.times() { |fi|
+  begin
+    tbl =  xml_document.split(".").first
+    f = File.open(xml_document, "r")
+    (f.size/MBK_XML_MAX_FILE_SIZE.to_i).floor.times() { |fi|
       fout = File.open("#{xmlpartdir}/#{tbl}_#{fi}.part", "w")
       fout.write(MBK_XML_HEADER) if fi > 0
       fout.write(f.read(MBK_XML_MAX_FILE_SIZE.to_i))
@@ -83,19 +84,23 @@ Dir.glob("*.xml").each() { |xml_document|
       fout.write(strmatch)
       fout.write(MBK_XML_FOOTER)
       fout.close
-   }
-   fout = File.open("#{xmlpartdir}/#{tbl}_#{((f.size/MBK_XML_MAX_FILE_SIZE.to_i).floor+1).to_s}.part", "w")
-   fout.write(MBK_XML_HEADER) if f.pos > 0
-   fout.write(f.read((f.size-f.pos)))
-   fout.close
-   f.close
-   File.delete(xml_document)
+    }
+    fout = File.open("#{xmlpartdir}/#{tbl}_#{((f.size/MBK_XML_MAX_FILE_SIZE.to_i).floor+1).to_s}.part", "w")
+    fout.write(MBK_XML_HEADER) if f.pos > 0
+    fout.write(f.read((f.size-f.pos)))
+    fout.close
+    f.close
+    File.delete(xml_document)
+  rescue
+    $log.warn "ERROR: could not split xml file #{xml_document}....#{$!}"
+  end
 }
 
 #read split xml in xmlpartdir and insert into mysql
 $log.debug "Entering #{xmlpartdir}..."
 Dir.chdir(xmlpartdir)
 Dir.glob("*.part").each() { |xml_document|
+ begin
   f = File.open("#{xmlpartdir}/#{xml_document}"); doc = Nokogiri::XML(f); f.close
   $log.info "Parsing file #{xml_document}..."
   tbl_name = get_table_name_from_xml(doc)
@@ -120,4 +125,7 @@ Dir.glob("*.part").each() { |xml_document|
     end
   }
   File.delete(xml_document)
+ rescue
+   $log.warn "ERROR: could not import xml part #{xml_document}....#{$!}"
+ end
 }

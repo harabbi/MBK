@@ -6,6 +6,26 @@ require 'syslogger'
 require 'pidfile'
 require 'mbk_params.rb'
 
+
+#_______________________________________________________________________________
+def mbk_volusion_login()
+  $log.info "Starting Mechanize..."
+  begin
+    $a = Mechanize.new
+    $a.get("#{MBK_VOLUSION_URL}/admin") do |page|
+  	  page.form_with(:name => 'loginform') do |f|
+  	    f.email = MBK_VOLUSION_USER
+  		  f.password = MBK_VOLUSION_PASS
+  	  end.click_button
+	  end
+  	$log.info "Logged in, starting task..."
+  	return $a
+  rescue
+    $log.warn $!
+    $log.warn "Error connecting to mechanize!"
+    return nil
+  end
+end
 #_______________________________________________________________________________
 def mbk_create_dir(d)
   FileUtils.makedirs(d) unless File.exists?(d)
@@ -22,8 +42,8 @@ def mbk_db_connect()
     )
     $con = ActiveRecord::Base.connection
   rescue
-    $log.info $!
-    $log.info "Error connecting to database!"
+    $log.warn $!
+    $log.warn "Error connecting to database!"
   end
 end
 #_______________________________________________________________________________
