@@ -13,27 +13,22 @@ log.level = Logger::INFO
 
 COL_DATA_FNAME = "columnData"
 
-a = Mechanize.new
-a.get("#{MBK_VOLUSION_URL}/admin") do |page|
-	page.form_with(:name => 'loginform') do |f|
-	       	f.email = MBK_VOLUSION_USER
-		f.password = MBK_VOLUSION_PASS
-	end.click_button
-end
+$a = mbk_volusion_login()
 
 mbk_create_dir(MBK_VOLUSION_OUTPUT_DIR)
 IO.readlines("tablesToDownload").each do |table_name|
-        log.info "Processing #{table_name.strip}..."
+  log.info "Processing #{table_name.strip}..."
 
-	a.get('https://www.modeltrainstuff.com/admin/db_export.asp')
-	a.page.forms.first.field_with(:name => "Table").value = table_name.strip
-	a.page.forms.first.checkbox_with(:name => "disregard", :value => table_name.strip).check
-	a.page.forms.first.checkboxes.each do |c|
+	$a.get('https://www.modeltrainstuff.com/admin/db_export.asp')
+	form = $a.page.forms.first
+  form.field_with(:name => "Table").value = table_name.strip
+	form.checkbox_with(:name => "disregard", :value => table_name.strip).check
+	form.checkboxes.each do |c|
 		c.check if c.value.split(".").first == table_name.strip
 	end
-	a.page.forms.first.field_with(:name => "FileType").value="XML"
-	a.page.forms.first.submit
+	form.field_with(:name => "FileType").value="XML"
+	form.submit
 	log.info "   Downloading..."
-        a.download(a.page.link_with(:text => "Click here to download your file").uri,
-	           File.open("#{MBK_VOLUSION_OUTPUT_DIR}/#{table_name.strip}.xml", "w"))
+  $a.download($a.page.link_with(:text => "Click here to download your file").uri,
+              File.open("#{MBK_VOLUSION_OUTPUT_DIR}/#{table_name.strip}.xml", "w"))
 end

@@ -1,6 +1,5 @@
 $: << File.dirname(__FILE__) unless $:.include? File.dirname(__FILE__)
 
-require 'mechanize'
 require 'mbk_params.rb'
 require 'mbk_utils.rb'
 
@@ -22,7 +21,8 @@ IO.readlines("tablesToDownload").each do |table_name|
   s = "create table if not exists `#{table_name}` (\n"
 	columns.find{|c| c.search('input').first.attribute('id').text == table_name.strip}.text.strip.split(")").each do |x|
 		if x.include? "Virtual Columns"
-			x.split(": ")[1].gsub!("*","").downcase.split(" ").each do |virtual_column|
+			x.split(": ")[1].downcase!.split(" ").each do |virtual_column|
+        virtual_column.gsub!("*", "")
 				s << "`#{virtual_column}` text,\n"
 			end
 		else
