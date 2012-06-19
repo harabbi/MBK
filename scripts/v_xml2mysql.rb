@@ -4,8 +4,6 @@ require 'nokogiri'
 require 'active_record'
 require 'mbk_params.rb'
 require 'mbk_utils.rb'
-require 'syslogger'
-require 'pidfile'
 
 #this utility assumes the output xml is from volusions custom export utility of the form...
 # <xml>

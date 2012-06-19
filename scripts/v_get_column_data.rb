@@ -1,54 +1,52 @@
 $: << File.dirname(__FILE__) unless $:.include? File.dirname(__FILE__)
 
-require 'rubygems'
 require 'mechanize'
 require 'mbk_params.rb'
+require 'mbk_utils.rb'
 
-puts "Starting Mechanize..."
+mbk_app_init(__FILE__)
+$con = mbk_db_connect()
 
-a = Mechanize.new
+$a = mbk_volusion_login()
+$a.get('https://www.modeltrainstuff.com/admin/db_export.asp')
 
-a.get("#{MBK_VOLUSION_URL}/admin") do |page| 
-	page.form_with(:name => 'loginform') do |f| 
-	       	f.email = MBK_VOLUSION_USER
-		f.password = MBK_VOLUSION_PASS
-	end.click_button
-end
+coldir = "#{MBK_DATA_DIR}/volusion/export/sql"
+mbk_create_dir(coldir)
 
-puts "Logged in, starting task..."
-
-a.get('https://www.modeltrainstuff.com/admin/db_export.asp')
-
-Dir.mkdir(MBK_VOLUSION_OUTPUT_DIR) unless File.exists?(MBK_VOLUSION_OUTPUT_DIR)
-columnFile = File.open("columnData", "w")
-
-columns = a.page.search('table tbody tr td span table')
+columns = $a.page.search('table tbody tr td span table')
 columns.each{|c| columns.delete(c) if !c.nil? and (c.text.include? "Check All")}
 
 IO.readlines("tablesToDownload").each do |table_name|
-	puts "Processing #{table_name.strip}..."
-	columnFile.puts "#{table_name.strip}"
-
+	$log.info "Processing #{table_name.strip!}..."
+  cf = File.open("#{coldir}/#{table_name}.sql", "w")
+  s = "create table if not exists `#{table_name}` (\n"
 	columns.find{|c| c.search('input').first.attribute('id').text == table_name.strip}.text.strip.split(")").each do |x|
 		if x.include? "Virtual Columns"
 			x.split(": ")[1].gsub!("*","").downcase.split(" ").each do |virtual_column|
-				columnFile.puts "#{virtual_column},text"
+				s << "`#{virtual_column}` text,\n"
 			end
 		else
-			column, type = x.split(" (")
-			next unless column and type
-			column.gsub!(/^ /, "")
-			type.downcase!
-			type.gsub!("* ", "")
-			type.gsub!(" : ", "(").gsub!(/$/, ")") if type.include?(":")
-			type.gsub!("text", "varchar")
-			type.gsub!("memo", "text")
-			type.gsub!("long", "bigint")
-			type.gsub!("currency", "float")
-			columnFile.puts "#{column.strip},#{type.strip}"
+		  column, type = x.split(" (")
+		  next unless column and type
+
+		  column.gsub!(/^ /, "")
+		  column.downcase!
+		  column.gsub!("* ", "")
+
+		  type.downcase!
+		  type.gsub!("* ", "")
+		  type.gsub!(" : ", "(").gsub!(/$/, ")") if type.include?(":")
+		  type.gsub!("text", "varchar")
+		  type.gsub!("memo", "text")
+		  type.gsub!("long", "bigint")
+		  type.gsub!("currency", "float")
+		  type.gsub!("varchar(-1)", "text")
+
+		  s << "`#{column.strip}` #{type.strip},\n"
 		end
 	end
-	columnFile.puts ""
+	s <<" `ready_to_import` BOOLEAN DEFAULT FALSE, `updated_at` TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, `created_at` DATETIME DEFAULT NULL);"
+  cf.write s
+	cf.close
 end
-
-puts "Finished collecting column data"
+$log.info "Finished collecting column data"
