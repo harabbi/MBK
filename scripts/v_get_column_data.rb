@@ -1,16 +1,13 @@
 $: << File.dirname(__FILE__) unless $:.include? File.dirname(__FILE__)
-
-require 'mbk_params.rb'
 require 'mbk_utils.rb'
-
 mbk_app_init(__FILE__)
 $con = mbk_db_connect()
-
 $a = mbk_volusion_login()
-$a.get('https://www.modeltrainstuff.com/admin/db_export.asp')
 
 coldir = "#{Dir.pwd}/#{MBK_DATA_DIR}/volusion/export/sql"
 mbk_create_dir(coldir)
+
+$a.get('https://www.modeltrainstuff.com/admin/db_export.asp')
 
 columns = $a.page.search('table tbody tr td span table')
 columns.each{|c| columns.delete(c) if !c.nil? and (c.text.include? "Check All")}

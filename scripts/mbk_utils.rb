@@ -6,7 +6,6 @@ require 'syslogger'
 require 'pidfile'
 require 'mbk_params.rb'
 
-
 #_______________________________________________________________________________
 def mbk_volusion_login()
   $log.info "Starting Mechanize..."

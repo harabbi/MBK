@@ -1,19 +1,10 @@
 $: << File.dirname(__FILE__) unless $:.include? File.dirname(__FILE__)
-
-require 'rubygems'
-require 'mechanize'
-require 'mbk_params.rb'
 require 'mbk_utils.rb'
-require 'syslogger'
-require 'pidfile'
-
-pf = PidFile.new
-log = Syslogger.new("#{__FILE__}", Syslog::LOG_PID, Syslog::LOG_LOCAL0)
-log.level = Logger::INFO
+mbk_app_init(__FILE__)
+$con = mbk_db_connect()
+$a = mbk_volusion_login()
 
 COL_DATA_FNAME = "columnData"
-
-$a = mbk_volusion_login()
 
 mbk_create_dir(MBK_VOLUSION_OUTPUT_DIR)
 IO.readlines("tablesToDownload").each do |table_name|
