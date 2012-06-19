@@ -59,6 +59,7 @@ MBK_XML_FOOTER = "</Export>"
 MBK_XML_MAX_FILE_SIZE ||= "20000000"
 MBK_XML_PART_DIR ||= "xml_part"
 
+coldir = "#{Dir.pwd}/#{MBK_DATA_DIR}/volusion/export/sql"
 xmldir = "#{Dir.pwd}/#{MBK_DATA_DIR}/volusion/export/"
 xmlpartdir = "#{xmldir}/#{MBK_XML_PART_DIR}"
 
@@ -104,13 +105,9 @@ Dir.glob("*.part").each() { |xml_document|
   tbl_name = get_table_name_from_xml(doc)
   flds     = get_table_flds_from_xml(doc, tbl_name)
 
-  s = "create table if not exists #{tbl_name}("
-  flds.collect() { |x| s << "#{x} text," }
-  s <<" `ready_to_import` BOOLEAN DEFAULT FALSE, `updated_at` TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, `created_at` DATETIME DEFAULT NULL);"
-  $log.info "Creating table #{tbl_name}...#{s}"
-  $con.execute("#{s}")
+  $log.info "Creating table #{tbl_name}..."
+  $con.execute(IO.read("#{coldir}/#{tbl_name}.sql"))
 
-  s = ""
   doc.xpath("//#{tbl_name}").each { |node|
     s =  "insert into #{tbl_name} values ("
     node.children.collect() { |x|  s << "#{$con.quote(x.text)}," }
