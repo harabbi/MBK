@@ -30,17 +30,23 @@ IO.readlines("tablesToDownload").each do |table_name|
 	columnFile.puts "#{table_name.strip}"
 
 	columns.find{|c| c.search('input').first.attribute('id').text == table_name.strip}.text.strip.split(")").each do |x|
-		column, type = x.split(" (")
-		next unless column and type
-		column.gsub!(/^ /, "")
-		type.downcase!
-		type.gsub!("* ", "")
-		type.gsub!(" : ", "(").gsub!(/$/, ")") if type.include?(":")
-		type.gsub!("text", "varchar")
-		type.gsub!("memo", "text")
-		type.gsub!("long", "bigint")
-		type.gsub!("currency", "float")
-		columnFile.puts "#{column.strip},#{type.strip}"
+		if x.include? "Virtual Columns"
+			x.split(": ")[1].gsub!("*","").downcase.split(" ").each do |virtual_column|
+				columnFile.puts "#{virtual_column},text"
+			end
+		else
+			column, type = x.split(" (")
+			next unless column and type
+			column.gsub!(/^ /, "")
+			type.downcase!
+			type.gsub!("* ", "")
+			type.gsub!(" : ", "(").gsub!(/$/, ")") if type.include?(":")
+			type.gsub!("text", "varchar")
+			type.gsub!("memo", "text")
+			type.gsub!("long", "bigint")
+			type.gsub!("currency", "float")
+			columnFile.puts "#{column.strip},#{type.strip}"
+		end
 	end
 	columnFile.puts ""
 end
