@@ -18,8 +18,8 @@ columns.each{|c| columns.delete(c) if !c.nil? and (c.text.include? "Check All")}
 
 IO.readlines("tablesToDownload").each do |table_name|
 	$log.info "Processing #{table_name.strip!}..."
-  cf = File.open("#{coldir}/#{table_name}.sql", "w")
-  s = "create table if not exists `#{table_name}` (\n"
+	cf = File.open("#{coldir}/#{table_name}.sql", "w")
+	s = "create table if not exists `#{table_name}` (\n"
 	columns.find{|c| c.search('input').first.attribute('id').text == table_name.strip}.text.strip.split(")").each do |x|
 		if x.include? "Virtual Columns"
 			x.split(": ")[1].gsub!("*","").downcase.split(" ").each do |virtual_column|
@@ -46,7 +46,7 @@ IO.readlines("tablesToDownload").each do |table_name|
 		end
 	end
 	s <<" `ready_to_import` BOOLEAN DEFAULT FALSE, `updated_at` TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, `created_at` DATETIME DEFAULT NULL);"
-  cf.write s
+	cf.write s
 	cf.close
 end
 $log.info "Finished collecting column data"
