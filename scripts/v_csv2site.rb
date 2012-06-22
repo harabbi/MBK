@@ -3,7 +3,7 @@ $: << File.dirname(__FILE__) unless $:.include? File.dirname(__FILE__)
 require 'mbk_utils.rb'
 
 mbk_app_init(__FILE__)
-$a = mbk_volusion_login()
+$a = mbk_volusion_login(__FILE__)
 
 #_______________________________________________________________________________
 at_exit do

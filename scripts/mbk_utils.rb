@@ -7,8 +7,8 @@ require 'pidfile'
 require 'mbk_params.rb'
 
 #_______________________________________________________________________________
-def mbk_volusion_login()
-  $log.info "Starting Mechanize..."
+def mbk_volusion_login(app)
+  mbkloginfo(app, "Starting Mechanize...")
   begin
     $a = Mechanize.new
     $a.get("#{MBK_VOLUSION_URL}/admin") do |page|
@@ -17,10 +17,10 @@ def mbk_volusion_login()
   		  f.password = MBK_VOLUSION_PASS
   	  end.click_button
 	  end
-  	mbkloginfo(__FILE__, "Logged in, starting task...")
+  	mbkloginfo(app, "Logged in, starting task...")
   	return $a
   rescue
-    mbklogerr(__FILE__, $!)
+    mbklogerr(app, $!)
     return nil
   end
 end

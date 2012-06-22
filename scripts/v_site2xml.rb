@@ -14,7 +14,7 @@ end
 #_______________________________________________________________________________
 
 mbk_app_init(__FILE__)
-$a = mbk_volusion_login()
+$a = mbk_volusion_login(__FILE__)
 
 mbk_create_dir(MBK_VOLUSION_OUTPUT_DIR)
 IO.readlines("#{Dir.pwd}/tablesToDownload").each do |table_name|

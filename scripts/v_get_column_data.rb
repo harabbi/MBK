@@ -15,7 +15,7 @@ end
 
 mbk_app_init(__FILE__)
 
-$a = mbk_volusion_login()
+$a = mbk_volusion_login(__FILE__)
 
 coldir = "#{Dir.pwd}/#{MBK_DATA_DIR}/volusion/export/sql"
 mbk_create_dir(coldir)
