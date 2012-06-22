@@ -50,5 +50,7 @@ def mbk_app_init(appname)
   $pf = PidFile.new
   $log = Syslogger.new("#{appname}", Syslog::LOG_PID, Syslog::LOG_LOCAL0)
   $log.level = Logger::INFO
+  $log.info "started"
+  $con = mbk_db_connect() 
 end
 #_______________________________________________________________________________

@@ -2,9 +2,19 @@ $: << File.dirname(__FILE__) unless $:.include? File.dirname(__FILE__)
 
 require 'mbk_utils.rb'
 
+#_______________________________________________________________________________
+at_exit do
+  if $!.nil? || $!.is_a?(SystemExit) && $!.success?
+    $log.info 'successfully finished'
+  else
+    code = $!.is_a?(SystemExit) ? $!.status : 1
+    $log.info "unseccessful failure with code #{code}"
+  end
+end
+#_______________________________________________________________________________
+
 mbk_app_init(__FILE__)
 
-$con = mbk_db_connect()
 $a = mbk_volusion_login()
 
 csvdir = "#{Dir.pwd}/#{MBK_DATA_DIR}/volusion/import/csv"

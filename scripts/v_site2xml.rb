@@ -2,14 +2,22 @@ $: << File.dirname(__FILE__) unless $:.include? File.dirname(__FILE__)
 
 require 'mbk_utils.rb'
 
+#_______________________________________________________________________________
+at_exit do
+  if $!.nil? || $!.is_a?(SystemExit) && $!.success?
+    $log.info 'successfully finished'
+  else
+    code = $!.is_a?(SystemExit) ? $!.status : 1
+    $log.info "unseccessful failure with code #{code}"
+  end
+end
+#_______________________________________________________________________________
+
 mbk_app_init(__FILE__)
-$con = mbk_db_connect()
 $a = mbk_volusion_login()
 
-COL_DATA_FNAME = "columnData"
-
 mbk_create_dir(MBK_VOLUSION_OUTPUT_DIR)
-IO.readlines("tablesToDownload").each do |table_name|
+IO.readlines("#{Dir.pwd}/tablesToDownload").each do |table_name|
   $log.info "Processing #{table_name.strip}..."
 
 	$a.get('https://www.modeltrainstuff.com/admin/db_export.asp')

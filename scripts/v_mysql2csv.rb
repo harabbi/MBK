@@ -3,7 +3,6 @@ $: << File.dirname(__FILE__) unless $:.include? File.dirname(__FILE__)
 require 'mbk_utils.rb'
 
 mbk_app_init(__FILE__)
-$con = mbk_db_connect()
 
 v_import_tbl = ARGV[0].to_s
 v_import_tbl = "mbk_volusion_export_#{Time.now.strftime("%Y%m%d")}" if v_import_tbl.length < 1

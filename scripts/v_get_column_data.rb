@@ -1,7 +1,20 @@
 $: << File.dirname(__FILE__) unless $:.include? File.dirname(__FILE__)
+
 require 'mbk_utils.rb'
+
+#_______________________________________________________________________________
+at_exit do
+  if $!.nil? || $!.is_a?(SystemExit) && $!.success?
+    $log.info 'successfully finished'
+  else
+    code = $!.is_a?(SystemExit) ? $!.status : 1
+    $log.info "unseccessful failure with code #{code}"
+  end
+end
+#_______________________________________________________________________________
+
 mbk_app_init(__FILE__)
-$con = mbk_db_connect()
+
 $a = mbk_volusion_login()
 
 coldir = "#{Dir.pwd}/#{MBK_DATA_DIR}/volusion/export/sql"
@@ -12,7 +25,7 @@ $a.get('https://www.modeltrainstuff.com/admin/db_export.asp')
 columns = $a.page.search('table tbody tr td span table')
 columns.each{|c| columns.delete(c) if !c.nil? and (c.text.include? "Check All")}
 
-IO.readlines("tablesToDownload").each do |table_name|
+IO.readlines("#{Dir.pwd}/tablesToDownload").each do |table_name|
 	$log.info "Processing #{table_name.strip!}..."
   cf = File.open("#{coldir}/#{table_name}.sql", "w")
   s = "create table if not exists `#{table_name}` (\n"

@@ -42,15 +42,21 @@ def get_table_flds_from_xml(doc, tbl)
   return flds
 end
 #_______________________________________________________________________________
-
+at_exit do
+  if $!.nil? || $!.is_a?(SystemExit) && $!.success?
+    $log.info 'successfully finished'
+  else
+    code = $!.is_a?(SystemExit) ? $!.status : 1
+    $log.info "unseccessful failure with code #{code}"
+  end
+end
+#_______________________________________________________________________________
 
 mbk_app_init(__FILE__)
-$con = mbk_db_connect()
 
 export_table = ARGV[0].to_s
 export_table = "mbk_volusion_export_#{Time.now.strftime("%Y%m%d")}" if export_table.length < 1
 
-$con.execute("drop database if exists #{export_table}")
 $con.execute("create database if not exists #{export_table}")
 $con.execute("use #{export_table}")
 
