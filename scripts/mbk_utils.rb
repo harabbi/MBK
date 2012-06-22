@@ -17,13 +17,26 @@ def mbk_volusion_login()
   		  f.password = MBK_VOLUSION_PASS
   	  end.click_button
 	  end
-  	$log.info "Logged in, starting task..."
+  	mbkloginfo(__FILE__, "Logged in, starting task...")
   	return $a
   rescue
-    $log.warn $!
-    $log.warn "Error connecting to mechanize!"
+    mbklogerr(__FILE__, $!)
     return nil
   end
+end
+#_______________________________________________________________________________
+def init_mbk_mysql_logger
+  $con.execute("create database if not exists mbk")
+  $con.execute("use mbk")
+  $con.execute("create table if not exists log (`tm` timestamp,`appname` varchar(2048),`username` varchar(255),`pid` int,`logtype` varchar(255),`message` text)")  
+end
+#_______________________________________________________________________________
+def mbklogerr(app,msg)
+  $con.execute("insert into mbk.log values (NOW(),'#{app}','#{ENV['USER']}',#{Process.pid},'ERROR','#{msg}')")  
+end
+#_______________________________________________________________________________
+def mbkloginfo(app,msg)
+  $con.execute("insert into mbk.log values (NOW(),'#{app}','#{ENV['USER']}',#{Process.pid},'INFO','#{msg}')")  
 end
 #_______________________________________________________________________________
 def mbk_create_dir(d)
@@ -41,8 +54,7 @@ def mbk_db_connect()
     )
     $con = ActiveRecord::Base.connection
   rescue
-    $log.warn $!
-    $log.warn "Error connecting to database!"
+    mbklogerr(__FILE__, $!)
   end
 end
 #_______________________________________________________________________________
@@ -50,7 +62,8 @@ def mbk_app_init(appname)
   $pf = PidFile.new
   $log = Syslogger.new("#{appname}", Syslog::LOG_PID, Syslog::LOG_LOCAL0)
   $log.level = Logger::INFO
-  $log.info "started"
+  mbkloginfo(appname, "started")
   $con = mbk_db_connect() 
+  init_mbk_mysql_logger
 end
 #_______________________________________________________________________________

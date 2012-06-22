@@ -5,10 +5,10 @@ require 'mbk_utils.rb'
 #_______________________________________________________________________________
 at_exit do
   if $!.nil? || $!.is_a?(SystemExit) && $!.success?
-    $log.info 'successfully finished'
+    mbkloginfo(__FILE__, 'successfully finished')
   else
     code = $!.is_a?(SystemExit) ? $!.status : 1
-    $log.info "unseccessful failure with code #{code}"
+    mbklogerr(__FILE__, "unseccessful failure with code #{code}")
   end
 end
 #_______________________________________________________________________________
@@ -18,7 +18,7 @@ $a = mbk_volusion_login()
 
 mbk_create_dir(MBK_VOLUSION_OUTPUT_DIR)
 IO.readlines("#{Dir.pwd}/tablesToDownload").each do |table_name|
-  $log.info "Processing #{table_name.strip}..."
+  mbkloginfo(__FILE__, "Processing #{table_name.strip}...")
 
 	$a.get('https://www.modeltrainstuff.com/admin/db_export.asp')
 	form = $a.page.forms.first
@@ -29,7 +29,7 @@ IO.readlines("#{Dir.pwd}/tablesToDownload").each do |table_name|
 	end
 	form.field_with(:name => "FileType").value="XML"
 	form.submit
-	$log.info "   Downloading..."
+	mbkloginfo(__FILE__, "Downloading...")
   $a.download($a.page.link_with(:text => "Click here to download your file").uri,
               File.open("#{MBK_VOLUSION_OUTPUT_DIR}/#{table_name.strip}.xml", "w"))
 end

@@ -2,6 +2,17 @@ $: << File.dirname(__FILE__) unless $:.include? File.dirname(__FILE__)
 
 require 'mbk_utils.rb'
 
+#_______________________________________________________________________________
+at_exit do
+  if $!.nil? || $!.is_a?(SystemExit) && $!.success?
+    mbkloginfo(__FILE__, 'successfully finished')
+  else
+    code = $!.is_a?(SystemExit) ? $!.status : 1
+    mbklogerr(__FILE__, "unseccessful failure with code #{code}")
+  end
+end
+#_______________________________________________________________________________
+
 mbk_app_init(__FILE__)
 
 v_import_tbl = ARGV[0].to_s
@@ -14,7 +25,7 @@ mbk_create_dir(csvpartdir)
 Dir.chdir(csvpartdir)
 
 ActiveRecord::Base.connection.tables.each() do |t|
-  $log.info "checking for update in table...#{t}"
+  mbkloginfo(__FILE__, "checking for update in table...#{t}")
   $con.execute("select * from #{t} where ready_to_import=true").each() do |r|
     puts r
   end

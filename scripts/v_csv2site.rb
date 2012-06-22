@@ -5,10 +5,10 @@ require 'mbk_utils.rb'
 #_______________________________________________________________________________
 at_exit do
   if $!.nil? || $!.is_a?(SystemExit) && $!.success?
-    $log.info 'successfully finished'
+    mbkloginfo(__FILE__, 'successfully finished')
   else
     code = $!.is_a?(SystemExit) ? $!.status : 1
-    $log.info "unseccessful failure with code #{code}"
+    mbklogerr(__FILE__, "unseccessful failure with code #{code}")
   end
 end
 #_______________________________________________________________________________
@@ -22,7 +22,7 @@ mbk_create_dir(csvdir)
 Dir.chdir(csvdir)
 
 Dir.glob("*.csv").each() do |csv_document|
-  $log.info "Uploading #{csv_document}..."
+  mbkloginfo(__FILE__, "Uploading #{csv_document}...")
   $a.get("https://www.modeltrainstuff.com/admin/db_import.asp")
   form = $a.page.forms.first
 
@@ -32,7 +32,7 @@ Dir.glob("*.csv").each() do |csv_document|
   form.radiobutton_with(:name => "TEST", :value => "").check
 
   form.submit
-  $log.info "   done!"
+  mbkloginfo(__FILE__, "done uploading!")
 end
 
 

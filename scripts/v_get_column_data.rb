@@ -5,10 +5,10 @@ require 'mbk_utils.rb'
 #_______________________________________________________________________________
 at_exit do
   if $!.nil? || $!.is_a?(SystemExit) && $!.success?
-    $log.info 'successfully finished'
+    mbkloginfo(__FILE__, 'successfully finished')
   else
     code = $!.is_a?(SystemExit) ? $!.status : 1
-    $log.info "unseccessful failure with code #{code}"
+    mbklogerr(__FILE__, "unseccessful failure with code #{code}")
   end
 end
 #_______________________________________________________________________________
@@ -26,7 +26,7 @@ columns = $a.page.search('table tbody tr td span table')
 columns.each{|c| columns.delete(c) if !c.nil? and (c.text.include? "Check All")}
 
 IO.readlines("#{Dir.pwd}/tablesToDownload").each do |table_name|
-	$log.info "Processing #{table_name.strip!}..."
+	mbkloginfo(__FILE__, "Processing #{table_name.strip!}...")
   cf = File.open("#{coldir}/#{table_name}.sql", "w")
   s = "create table if not exists `#{table_name}` (\n"
 	columns.find{|c| c.search('input').first.attribute('id').text == table_name.strip}.text.strip.split(")").each do |x|
@@ -59,4 +59,3 @@ IO.readlines("#{Dir.pwd}/tablesToDownload").each do |table_name|
   cf.write s
 	cf.close
 end
-$log.info "Finished collecting column data"

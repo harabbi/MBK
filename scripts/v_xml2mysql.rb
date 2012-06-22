@@ -44,10 +44,10 @@ end
 #_______________________________________________________________________________
 at_exit do
   if $!.nil? || $!.is_a?(SystemExit) && $!.success?
-    $log.info 'successfully finished'
+    mbkloginfo(__FILE__, 'successfully finished')
   else
     code = $!.is_a?(SystemExit) ? $!.status : 1
-    $log.info "unseccessful failure with code #{code}"
+    mbklogerr(__FILE__, "unseccessful failure with code #{code}")
   end
 end
 #_______________________________________________________________________________
@@ -97,21 +97,22 @@ Dir.glob("*.xml").each() { |xml_document|
     f.close
     File.delete(xml_document)
   rescue
-    $log.warn "ERROR: could not split xml file #{xml_document}....#{$!}"
+    mbklogerr(__FILE__,"ERROR: could not split xml file #{xml_document}....#{$!}")
   end
 }
 
 #read split xml in xmlpartdir and insert into mysql
-$log.debug "Entering #{xmlpartdir}..."
+mbkloginfo(__FILE__, "Entering #{xmlpartdir}...")
+
 Dir.chdir(xmlpartdir)
 Dir.glob("*.part").each() { |xml_document|
  begin
   f = File.open("#{xmlpartdir}/#{xml_document}"); doc = Nokogiri::XML(f); f.close
-  $log.info "Parsing file #{xml_document}..."
+  mbkloginfo(__FILE__, "Parsing file #{xml_document}...")
   tbl_name = get_table_name_from_xml(doc)
   flds     = get_table_flds_from_xml(doc, tbl_name)
 
-  $log.info "Creating table #{tbl_name}..."
+  mbkloginfo(__FILE__, "Creating table #{tbl_name}...")
   $con.execute(IO.read("#{coldir}/#{tbl_name}.sql"))
 
   doc.xpath("//#{tbl_name}").each { |node|
@@ -121,12 +122,11 @@ Dir.glob("*.part").each() { |xml_document|
     begin
       $con.execute("#{s}")
     rescue
-      $log.info "ERROR inserting row!"
-      $log.info $!
+      mbklogerr(__FILE__, "ERROR inserting row!...#{$!}")
     end
   }
   File.delete(xml_document)
  rescue
-   $log.warn "ERROR: could not import xml part #{xml_document}....#{$!}"
+   mbklogerr(__FILE__, "ERROR: could not import xml part #{xml_document}....#{$!}")
  end
 }
