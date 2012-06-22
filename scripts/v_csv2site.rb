@@ -2,6 +2,9 @@ $: << File.dirname(__FILE__) unless $:.include? File.dirname(__FILE__)
 
 require 'mbk_utils.rb'
 
+mbk_app_init(__FILE__)
+$a = mbk_volusion_login()
+
 #_______________________________________________________________________________
 at_exit do
   if $!.nil? || $!.is_a?(SystemExit) && $!.success?
@@ -12,10 +15,6 @@ at_exit do
   end
 end
 #_______________________________________________________________________________
-
-mbk_app_init(__FILE__)
-
-$a = mbk_volusion_login()
 
 csvdir = "#{Dir.pwd}/#{MBK_DATA_DIR}/volusion/import/csv"
 mbk_create_dir(csvdir)
