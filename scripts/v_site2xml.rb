@@ -30,6 +30,11 @@ IO.readlines("#{Dir.pwd}/tablesToDownload").each do |table_name|
 	form.field_with(:name => "FileType").value="XML"
 	form.submit
 	mbkloginfo(__FILE__, "Downloading...")
-  $a.download($a.page.link_with(:text => "Click here to download your file").uri,
+  begin 
+    $a.download($a.page.link_with(:text => "Click here to download your file").uri,
               File.open("#{MBK_VOLUSION_OUTPUT_DIR}/#{table_name.strip}.xml", "w"))
+    FileUtils.mv("#{MBK_VOLUSION_OUTPUT_DIR}/#{table_name.strip}.xml", "#{MBK_VOLUSION_OUTPUT_DIR}/xml/#{table_name.strip}.xml")
+  rescue
+    mbklogerr(__FILE__, "unseccessful download of #{MBK_VOLUSION_OUTPUT_DIR}/#{table_name.strip}.xml")
+  end
 end

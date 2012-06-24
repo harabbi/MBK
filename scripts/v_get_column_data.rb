@@ -29,6 +29,7 @@ IO.readlines("#{Dir.pwd}/tablesToDownload").each do |table_name|
 	mbkloginfo(__FILE__, "Processing #{table_name.strip!}...")
   cf = File.open("#{coldir}/#{table_name}.sql", "w")
   s = "create table if not exists `#{table_name}` (\n"
+  cnt = "1"
 	columns.find{|c| c.search('input').first.attribute('id').text == table_name.strip}.text.strip.split(")").each do |x|
 		if x.include? "Virtual Columns"
 			x.split(": ")[1].downcase!.split(" ").each do |virtual_column|
@@ -52,10 +53,15 @@ IO.readlines("#{Dir.pwd}/tablesToDownload").each do |table_name|
 		  type.gsub!("currency", "float")
 		  type.gsub!("varchar(-1)", "text")
 
-		  s << "`#{column.strip}` #{type.strip},\n"
+      if column.strip[-2..-1] == "id" and cnt == "1" and type.strip != "text"
+		    s << "`#{column.strip}` #{type.strip} PRIMARY KEY,\n" if column.strip[-2..-1] == "id" and cnt == "1"
+      else
+        s << "`#{column.strip}` #{type.strip},\n"
+      end
+      cnt.next!
 		end
 	end
-	s <<" `ready_to_import` BOOLEAN DEFAULT FALSE, `updated_at` TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, `created_at` DATETIME DEFAULT NULL);"
+	s <<" `ready_to_import` BOOLEAN DEFAULT FALSE, `updated_at` TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, `created_at` DATETIME DEFAULT NULL) ENGINE=MyISAM;"
   cf.write s
 	cf.close
 end

@@ -21,6 +21,7 @@ $con.execute("use #{v_import_tbl}")
 
 csvdir = "#{Dir.pwd}/#{MBK_DATA_DIR}/volusion/import/csv"
 csvpartdir = "#{Dir.pwd}/#{MBK_DATA_DIR}/volusion/import/csv_part"
+
 mbk_create_dir(csvpartdir)
 Dir.chdir(csvpartdir)
 
@@ -28,5 +29,9 @@ ActiveRecord::Base.connection.tables.each() do |t|
   mbkloginfo(__FILE__, "checking for update in table...#{t}")
   $con.execute("select * from #{t} where ready_to_import=true").each() do |r|
     puts r
+    $con.execute("update #{t} set read_to_import=false where ready_to_import=r[0]")
+
   end
+  
+  
 end

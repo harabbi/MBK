@@ -5,10 +5,11 @@ require 'mechanize'
 require 'syslogger'
 require 'pidfile'
 require 'mbk_params.rb'
+require 'fileutils'
 
 #_______________________________________________________________________________
 def mbk_volusion_login(app)
-  mbkloginfo(app, "Starting Mechanize...")
+  $log.info "Starting Mechanize..."
   begin
     $a = Mechanize.new
     $a.get("#{MBK_VOLUSION_URL}/admin") do |page|
@@ -26,17 +27,20 @@ def mbk_volusion_login(app)
 end
 #_______________________________________________________________________________
 def init_mbk_mysql_logger
+  $con = mbk_db_connect() unless $con
   $con.execute("create database if not exists mbk")
   $con.execute("use mbk")
   $con.execute("create table if not exists log (`tm` timestamp,`appname` varchar(2048),`username` varchar(255),`pid` int,`logtype` varchar(255),`message` text)")  
 end
 #_______________________________________________________________________________
 def mbklogerr(app,msg)
-  $con.execute("insert into mbk.log values (NOW(),'#{app}','#{ENV['USER']}',#{Process.pid},'ERROR','#{msg}')")  
+  init_mbk_mysql_logger unless $con
+  $con.execute("insert into mbk.log values (NOW(),'#{app}','#{ENV['USER']}',#{Process.pid},'ERROR',#{$con.quote($con.quote_string(msg))})")  
 end
 #_______________________________________________________________________________
 def mbkloginfo(app,msg)
-  $con.execute("insert into mbk.log values (NOW(),'#{app}','#{ENV['USER']}',#{Process.pid},'INFO','#{msg}')")  
+  init_mbk_mysql_logger unless $con  
+  $con.execute("insert into mbk.log values (NOW(),'#{app}','#{ENV['USER']}',#{Process.pid},'INFO',#{$con.quote($con.quote_string(msg))})")  
 end
 #_______________________________________________________________________________
 def mbk_create_dir(d)
@@ -59,7 +63,11 @@ def mbk_db_connect()
 end
 #_______________________________________________________________________________
 def mbk_app_init(appname)
-  $pf = PidFile.new
+  begin
+    $pf = PidFile.new
+  rescue
+    mbklogerr(appname, "ALREADY RUNNING")
+  end
   $log = Syslogger.new("#{appname}", Syslog::LOG_PID, Syslog::LOG_LOCAL0)
   $log.level = Logger::INFO
   $con = mbk_db_connect() 

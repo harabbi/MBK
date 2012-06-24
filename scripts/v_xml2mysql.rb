@@ -1,29 +1,19 @@
 $: << File.dirname(__FILE__) unless $:.include? File.dirname(__FILE__)
 
-require 'nokogiri'
-require 'active_record'
-require 'mbk_params.rb'
 require 'mbk_utils.rb'
 
-#this utility assumes the output xml is from volusions custom export utility of the form...
-# <xml>
-#  <Export>
-#    <tablename record1>
-#      <table column1>column data1</table column1>
-#       ...
-#      <table columnn>column dataN</table columnN>
-#    </tablename record1>
-#     ...
-#    <tablename recordN>
-#      <table column1>column data1</table column1>
-#       ...
-#      <table columnn>column dataN</table columnN>
-#    </tablename recordN>
-#  </Export>
-#</xml>
-#...it also assumes homogeneous data in each file
-#
-#
+#_______________________________________________________________________________
+def numeric_column?(cols, col)
+  c = cols["#{col}"]
+  return true if c == "bigint(20)" or c == "int(11)" or c == "float" or c == "double" 
+  return false
+end
+#_______________________________________________________________________________
+def get_db_columns(db, tbl)
+  cols = Hash.new
+  $con.execute("SHOW COLUMNS FROM #{db}.#{tbl}").each() { |x|  cols["#{x[0].to_s}"] = x[1].to_s }
+  return cols
+end
 #_______________________________________________________________________________
 def get_table_name_from_xml(doc)
   begin
@@ -36,7 +26,7 @@ end
 def get_table_flds_from_xml(doc, tbl)
   flds = Array.new
   begin
-    doc.xpath("//#{get_table_name_from_xml(doc)}").first.children.each() { |c| flds.push c.name }
+    doc.xpath("//#{get_table_name_from_xml(doc)}").first.children.each() { |c| flds.push "`#{c.name}`" }
   rescue
   end
   return flds
@@ -65,14 +55,28 @@ MBK_XML_FOOTER = "</Export>"
 MBK_XML_MAX_FILE_SIZE ||= "20000000"
 MBK_XML_PART_DIR ||= "xml_part"
 
+cols = {}
 coldir = "#{Dir.pwd}/#{MBK_DATA_DIR}/volusion/export/sql"
-xmldir = "#{Dir.pwd}/#{MBK_DATA_DIR}/volusion/export/"
-xmlpartdir = "#{xmldir}/#{MBK_XML_PART_DIR}"
-
+xmldir = "#{Dir.pwd}/#{MBK_DATA_DIR}/volusion/export/xml"
+xmlpartdir = "#{Dir.pwd}/#{MBK_DATA_DIR}/volusion/export/xml_part"
+#____________________________________________________________________________
 #split xml into parts place them in xmlpartdir
+mbk_create_dir(xmldir)
 mbk_create_dir(xmlpartdir)
+
 Dir.chdir(xmldir)
 Dir.glob("*.xml").each() { |xml_document|
+  begin
+    f = File.open("#{xmldir}/#{xml_document}"); doc = Nokogiri::XML(f); f.close
+    tbl_name = get_table_name_from_xml(doc)
+    mbkloginfo(__FILE__, "Creating table #{tbl_name}...")
+    $con.execute(IO.read("#{coldir}/#{tbl_name}.sql"))
+    File.delete("#{coldir}/#{tbl_name}.sql")
+  rescue
+    mbklogerr(__FILE__, "ERROR: could create table #{tbl_name}....#{$!}")
+  end
+  cols = get_db_columns(export_table, tbl_name)
+  
   begin
     tbl =  xml_document.split(".").first
     f = File.open(xml_document, "r")
@@ -100,25 +104,28 @@ Dir.glob("*.xml").each() { |xml_document|
     mbklogerr(__FILE__,"ERROR: could not split xml file #{xml_document}....#{$!}")
   end
 }
-
+#____________________________________________________________________________
 #read split xml in xmlpartdir and insert into mysql
 mbkloginfo(__FILE__, "Entering #{xmlpartdir}...")
 
 Dir.chdir(xmlpartdir)
 Dir.glob("*.part").each() { |xml_document|
- begin
   f = File.open("#{xmlpartdir}/#{xml_document}"); doc = Nokogiri::XML(f); f.close
   mbkloginfo(__FILE__, "Parsing file #{xml_document}...")
   tbl_name = get_table_name_from_xml(doc)
-  flds     = get_table_flds_from_xml(doc, tbl_name)
-
-  mbkloginfo(__FILE__, "Creating table #{tbl_name}...")
-  $con.execute(IO.read("#{coldir}/#{tbl_name}.sql"))
-
+  ins = "(#{get_table_flds_from_xml(doc, tbl_name).join(",")},`ready_to_import`,`updated_at`,`created_at`)"
+  
   doc.xpath("//#{tbl_name}").each { |node|
-    s =  "insert into #{tbl_name} values ("
-    node.children.collect() { |x|  s << "#{$con.quote(x.text)}," }
+    s =  "insert ignore into #{tbl_name} #{ins} values ("
+    node.children.collect() { |x|  
+      if numeric_column?(cols, x.name) and x.text.size > 0
+        s << "#{x.text},"
+      else
+        s << "#{$con.quote($con.quote_string(x.text))}," 
+      end
+    }
     s << "false, NOW(), NOW());"
+
     begin
       $con.execute("#{s}")
     rescue
@@ -126,7 +133,4 @@ Dir.glob("*.part").each() { |xml_document|
     end
   }
   File.delete(xml_document)
- rescue
-   mbklogerr(__FILE__, "ERROR: could not import xml part #{xml_document}....#{$!}")
- end
 }
