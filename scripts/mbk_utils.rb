@@ -30,17 +30,17 @@ def init_mbk_mysql_logger
   $con = mbk_db_connect() unless $con
   $con.execute("create database if not exists mbk")
   $con.execute("use mbk")
-  $con.execute("create table if not exists log (`tm` timestamp,`appname` varchar(2048),`username` varchar(255),`pid` int,`logtype` varchar(255),`message` text)")  
+  $con.execute("create table if not exists log (`tm` timestamp,`appname` varchar(2048),`username` varchar(255),`pid` int,`logtype` varchar(255), `uuid` bigint, `read` tinyint, `message` text)")  
 end
 #_______________________________________________________________________________
 def mbklogerr(app,msg)
   init_mbk_mysql_logger unless $con
-  $con.execute("insert into mbk.log values (NOW(),'#{app}','#{ENV['USER']}',#{Process.pid},'ERROR',#{$con.quote($con.quote_string(msg))})")  
+  $con.execute("insert into mbk.log values (NOW(),'#{app}','#{ENV['USER']}',#{Process.pid},'ERROR',#{$uuid},0,#{$con.quote($con.quote_string(msg))})")  
 end
 #_______________________________________________________________________________
 def mbkloginfo(app,msg)
   init_mbk_mysql_logger unless $con  
-  $con.execute("insert into mbk.log values (NOW(),'#{app}','#{ENV['USER']}',#{Process.pid},'INFO',#{$con.quote($con.quote_string(msg))})")  
+  $con.execute("insert into mbk.log values (NOW(),'#{app}','#{ENV['USER']}',#{Process.pid},'INFO',#{$uuid},0,#{$con.quote($con.quote_string(msg))})")  
 end
 #_______________________________________________________________________________
 def mbk_create_dir(d)
@@ -65,6 +65,7 @@ end
 def mbk_app_init(appname)
   begin
     $pf = PidFile.new
+    $uuid = ((Time.now.to_f*10)%10000000).round(0)
   rescue
     mbklogerr(appname, "ALREADY RUNNING")
   end
