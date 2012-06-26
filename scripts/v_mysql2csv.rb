@@ -2,6 +2,7 @@ $: << File.dirname(__FILE__) unless $:.include? File.dirname(__FILE__)
 
 require 'mbk_utils.rb'
 
+MAX_CSV_SIZE = 5000000
 #_______________________________________________________________________________
 at_exit do
   if $!.nil? || $!.is_a?(SystemExit) && $!.success?
@@ -25,13 +26,21 @@ csvpartdir = "#{Dir.pwd}/#{MBK_DATA_DIR}/volusion/import/csv_part"
 mbk_create_dir(csvpartdir)
 Dir.chdir(csvpartdir)
 
-ActiveRecord::Base.connection.tables.each() do |t|
+$con.tables.each() do |t|
   mbkloginfo(__FILE__, "checking for update in table...#{t}")
-  $con.execute("select * from #{t} where ready_to_import=true").each() do |r|
-    puts r
-    $con.execute("update #{t} set read_to_import=false where ready_to_import=r[0]")
-
+  colhdr = true
+  i = "0"
+  $con.select_all("select * from #{t} where ready_to_import=true").each() do |r|
+    s = ""; 
+    s << "#{r.keys.join(",")}\n" if colhdr; colhdr=false
+    s << "#{r.values.join(",")}\n"
+    $con.execute("update #{t} set `ready_to_import`=false where `#{r.keys.first}`='#{r[0]}'")
+    File.open("#{csvpartdir}/#{t}_#{i}.part", "a+") { |f|
+       f.write(s); 
+       if f.pos > MAX_CSV_SIZE
+         i.next!
+         colhdr = true
+       end
+     }
   end
-  
-  
 end
