@@ -34,13 +34,20 @@ def init_mbk_mysql_logger
 end
 #_______________________________________________________________________________
 def mbklogerr(app,msg)
-  init_mbk_mysql_logger unless $con
-  $con.execute("insert into mbk.log values (NOW(),'#{app}','#{ENV['USER']}',#{Process.pid},'ERROR',#{$uuid},0,#{$con.quote($con.quote_string(msg))})")  
+  mbklog(app,msg,"ERROR")
 end
 #_______________________________________________________________________________
 def mbkloginfo(app,msg)
+  mbklog(app,msg,"INFO")
+end
+#_______________________________________________________________________________
+def mbklogdebug(app,msg)
+  mbklog(app,msg,"DEBUG")
+end
+#_______________________________________________________________________________
+def mbklog(app,msg,type)
   init_mbk_mysql_logger unless $con  
-  $con.execute("insert into mbk.log values (NOW(),'#{app}','#{ENV['USER']}',#{Process.pid},'INFO',#{$uuid},0,#{$con.quote($con.quote_string(msg))})")  
+  $con.execute("insert into mbk.log values (NOW(),'#{app}','#{ENV['USER']}',#{Process.pid},'#{type}',#{$uuid},0,#{$con.quote($con.quote_string(msg))})")  
 end
 #_______________________________________________________________________________
 def mbk_create_dir(d)
