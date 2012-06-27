@@ -26,7 +26,7 @@ rs.each do |r|
 end
 email_body << "-----End of Error Report-----"
 
-mbk_send_mail("#{rs.count} ERRORS IN LOG", email_body)
+mbk_send_mail("#{rs.count} ERRORS IN LOG", email_body) unless rs.count == 0
 
 #Mark the errors read
 $con.execute('update mbk.log set `read`=1 where `read`=0 and `logtype` like "ERROR";')
