@@ -49,7 +49,7 @@ $con.execute('drop table mbk.t_uuid;')
 
 #Check to see that each app has run recently
 MBK_APP_AND_RUN_FREQ.each do |appname, frequency|
-  unless $con.select_all("select * from mbk.log where `appname`='#{appname}' and message like 'successfully finished' and tm > date_sub(now(), interval #{frequency} hour);")
-    mbk_send_mail("#{appname} FAIL TO RUN", "#{appname} has not had a successful run in the last #{frequency} hours.")
+  unless $con.select_all("select * from mbk.log where `appname`='#{appname}' and message like 'successfully finished' and tm > date_sub(now(), interval #{frequency} minute);")
+    mbk_send_mail("#{appname} FAIL TO RUN", "#{appname} has not had a successful run in the last #{frequency} minutes.")
   end
 end

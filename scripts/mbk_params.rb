@@ -16,9 +16,10 @@ MBK_DB_PASS             = ENV["MBK_DB_PASS"]
 
 MBK_ADMIN_EMAIL         = ENV["MBK_ADMIN_EMAIL"]
 
-#Array of arrays for ["<appname>", <freq in hours>]
-MBK_APP_AND_RUN_FREQ    = [ ["scripts/v_csv2site.rb", 1],
-                            ["scripts/v_get_column_data.rb", 1],
-                            ["scripts/v_mysql2csv.rb", 1],
-                            ["scripts/v_site2xml.rb", 30],
-                            ["scripts/v_xml2mysql.rb", 30] ]
+#Array of arrays for ["<appname>", <freq in minutes>]
+#60 -> 1 hr, 720 -> 12 hrs, 1440 -> 24 hrs, 2160 -> 36 hrs
+MBK_APP_AND_RUN_FREQ    = [ ["scripts/v_csv2site.rb", 30],
+                            ["scripts/v_mysql2csv.rb", 30],
+                            ["scripts/v_get_column_data.rb", 1800 ],
+                            ["scripts/v_site2xml.rb", 1800],
+                            ["scripts/v_xml2mysql.rb", 1800] ]
