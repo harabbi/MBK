@@ -114,7 +114,7 @@ Dir.glob("*.part").each() { |xml_document|
   mbkloginfo(__FILE__, "Parsing file #{xml_document}...")
   tbl_name = get_table_name_from_xml(doc)
   ins = "(#{get_table_flds_from_xml(doc, tbl_name).join(",")},`ready_to_import`,`updated_at`,`created_at`)"
-  
+  #mbk_db_lock_table(tbl_name)
   doc.xpath("//#{tbl_name}").each { |node|
     s =  "insert ignore into #{tbl_name} #{ins} values ("
     node.children.collect() { |x|  
@@ -132,5 +132,6 @@ Dir.glob("*.part").each() { |xml_document|
       mbklogerr(__FILE__, "ERROR inserting row!...#{$!}")
     end
   }
+  #mbk_db_unlock
   File.delete(xml_document)
 }
