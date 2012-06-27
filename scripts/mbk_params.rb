@@ -22,4 +22,4 @@ MBK_APP_AND_RUN_FREQ    = [ ["scripts/v_csv2site.rb", 30],
                             ["scripts/v_mysql2csv.rb", 30],
                             ["scripts/v_get_column_data.rb", 1800 ],
                             ["scripts/v_site2xml.rb", 1800],
-                            ["scripts/v_xml2mysql.rb", 1800] ]
+                            ["scripts/v_xml2mysql.rb", 3]]
