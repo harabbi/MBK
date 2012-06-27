@@ -69,6 +69,14 @@ def mbk_db_connect()
   end
 end
 #_______________________________________________________________________________
+def mbk_db_lock_table(tbl)
+  $con.execute("LOCK TABLES #{tbl} WRITE")
+end
+#_______________________________________________________________________________
+def mbk_db_unlock()
+  $con.execute("UNLOCK TABLES")
+end
+#_______________________________________________________________________________
 def mbk_app_init(appname)
   begin
     $pf = PidFile.new
