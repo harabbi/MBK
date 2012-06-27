@@ -6,6 +6,7 @@ require 'syslogger'
 require 'pidfile'
 require 'mbk_params.rb'
 require 'fileutils'
+require 'mail'
 
 #_______________________________________________________________________________
 def mbk_volusion_login(app)
@@ -83,3 +84,12 @@ def mbk_app_init(appname)
   mbkloginfo(appname, "started")
 end
 #_______________________________________________________________________________
+def mbk_send_mail(subject,body)
+  Mail.deliver do
+    from "error@mbk.net"
+    to "#{MBK_ADMIN_EMAIL}"
+    subject "#{subject}"
+    body "#{body}"
+  end
+
+end
