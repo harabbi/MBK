@@ -9,12 +9,6 @@ def numeric_column?(cols, col)
   return false
 end
 #_______________________________________________________________________________
-def get_db_columns(db, tbl)
-  cols = Hash.new
-  $con.execute("SHOW COLUMNS FROM #{db}.#{tbl}").each() { |x|  cols["#{x[0].to_s}"] = x[1].to_s }
-  return cols
-end
-#_______________________________________________________________________________
 def get_table_name_from_xml(doc)
   begin
     tbl_name = doc.xpath("//Export").first.children.first.name
