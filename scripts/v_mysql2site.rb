@@ -68,14 +68,14 @@ $con.tables.each() do |t|
       $a.get("https://www.modeltrainstuff.com/admin/db_import.asp")
       form = $a.page.forms.first
 
-      form.field_with(:name => "import_type").value = ufname.gsub(".csv", "").gsub(/_[0-9]*$/, "").split("/").last
+      form.field_with(:name => "import_type").value = t
       form.file_uploads.first.file_name = ufname
       form.radiobutton_with(:name => "OVERWRITE", :value => "Y").check
       form.radiobutton_with(:name => "TEST", :value => "").check
 
       form.submit
       mbkloginfo(__FILE__, "done uploading!")
-      File.delete(ufname)
+      #File.delete(ufname)
     }
   end
   #mbk_db_unlock()
