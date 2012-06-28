@@ -55,7 +55,6 @@ $con.tables.each() do |t|
       s << "#{r.keys.join(",")}\n" if colhdr; colhdr=false
       c = get_db_columns(v_import_tbl, t)
       r.keys.size.times() do |cnt|
-        puts c[(r.keys[cnt]).to_s]
         if c[(r.keys[cnt]).to_s] == "text" or c[(r.keys[cnt]).to_s].split("(").first.strip == "varchar"
           s << "\"#{r[(r.keys[cnt]).to_s]}\","
         else
