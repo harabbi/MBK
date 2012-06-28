@@ -31,9 +31,10 @@ $con.tables.each() do |t|
   i = "1"
   #mbk_db_lock_table(t)
   rs = $con.select_all("select * from #{t} where ready_to_import=true")
-  if rs.size > 0 
-    mbkloginfo(__FILE__, "Found #{rs.size} update(s) in table...#{t}")
-    rs.each() do |r|
+  if rs.size > 0
+    mbkloginfo(__FILE__, "Found #{rs.size} update(s) in table...#{t}") 
+    rs.each do |r|
+      $con.execute("update #{t} set `ready_to_import`=false where `#{r.keys.first}`='#{r[r.keys.first]}'")
       r.delete("ready_to_import")
       r.delete("updated_at")
       r.delete("created_at")
@@ -52,7 +53,7 @@ $con.tables.each() do |t|
       s = ""; 
       s << "#{r.keys.join(",")}\n" if colhdr; colhdr=false
       s << "#{r.values.join(",")}\n"
-      $con.execute("update #{t} set `ready_to_import`=false where `#{r.keys.first}`='#{r[0]}'")
+
       File.open("#{csvdir}/#{t}_#{i}.csv", "a+") { |f|
          f.write(s); 
          if f.pos > MAX_CSV_SIZE
@@ -67,15 +68,15 @@ $con.tables.each() do |t|
       $a.get("https://www.modeltrainstuff.com/admin/db_import.asp")
       form = $a.page.forms.first
 
-      form.field_with(:name => "import_type").value = ufname.gsub(".csv", "").gsub(/_[0-9]*$/, "")
+      form.field_with(:name => "import_type").value = ufname.gsub(".csv", "").gsub(/_[0-9]*$/, "").split("/").last
       form.file_uploads.first.file_name = ufname
       form.radiobutton_with(:name => "OVERWRITE", :value => "Y").check
       form.radiobutton_with(:name => "TEST", :value => "").check
 
-     # form.submit
+      form.submit
       mbkloginfo(__FILE__, "done uploading!")
       File.delete(ufname)
     }
-    #mbk_db_unlock()
   end
+  #mbk_db_unlock()
 end
