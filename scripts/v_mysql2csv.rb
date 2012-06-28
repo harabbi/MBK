@@ -27,7 +27,7 @@ mbk_create_dir(csvpartdir)
 Dir.chdir(csvpartdir)
 
 $con.tables.each() do |t|
-  #mbkloginfo(__FILE__, "checking for update in table...#{t}")
+  mbkloginfo(__FILE__, "checking for update in table...#{t}")
   colhdr = true
   i = "0"
   #mbk_db_lock_table(t)
@@ -35,6 +35,18 @@ $con.tables.each() do |t|
     r.delete("ready_to_import")
     r.delete("updated_at")
     r.delete("created_at")
+    
+    if t == "Customers"
+      r.delete("password") 
+      r.delete("customerid") 
+    end
+    
+    if t == "Products_Joined"
+      r.delete("producturl")
+      r.delete("photourl") 
+      r.delete("categorytree")
+    end
+    
     s = ""; 
     s << "#{r.keys.join(",")}\n" if colhdr; colhdr=false
     s << "#{r.values.join(",")}\n"
