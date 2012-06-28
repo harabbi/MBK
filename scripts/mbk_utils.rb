@@ -78,6 +78,12 @@ def mbk_db_unlock()
   $con.execute("UNLOCK TABLES")
 end
 #_______________________________________________________________________________
+def get_db_columns(db, tbl)
+  cols = Hash.new
+  $con.execute("SHOW COLUMNS FROM #{db}.#{tbl}").each() { |x|  cols["#{x[0].to_s}"] = x[1].to_s }
+  return cols
+end
+#_______________________________________________________________________________
 def mbk_app_init(appname)
   begin
     $pf = PidFile.new

@@ -12,7 +12,6 @@ at_exit do
     mbklogerr(__FILE__, "unseccessful failure with code #{code}")
   end
 end
-#_______________________________________________________________________________
 
 mbk_app_init(__FILE__)
 $a = mbk_volusion_login(__FILE__)
@@ -48,11 +47,23 @@ $con.tables.each() do |t|
         r.delete("producturl")
         r.delete("photourl") 
         r.delete("categorytree")
+        r.delete("numproductssharingstock")
+        r.delete("photoseed")
       end
     
       s = ""; 
       s << "#{r.keys.join(",")}\n" if colhdr; colhdr=false
-      s << "#{r.values.join(",")}\n"
+      c = get_db_columns(v_import_tbl, t)
+      r.keys.size.times() do |cnt|
+        puts c[(r.keys[cnt]).to_s]
+        if c[(r.keys[cnt]).to_s] == "text" or c[(r.keys[cnt]).to_s].split("(").first.strip == "varchar"
+          s << "\"#{r[(r.keys[cnt]).to_s]}\","
+        else
+          s << "#{r[(r.keys[cnt]).to_s]},"
+        end
+      end
+      s.chomp!(",")
+      s << "\n"
 
       File.open("#{csvdir}/#{t}_#{i}.csv", "a+") { |f|
          f.write(s); 
@@ -68,14 +79,16 @@ $con.tables.each() do |t|
       $a.get("https://www.modeltrainstuff.com/admin/db_import.asp")
       form = $a.page.forms.first
 
-      form.field_with(:name => "import_type").value = t
+      import_table = t
+      import_table = "Products" if t == "Products_Joined"
+      form.field_with(:name => "import_type").value = import_table
       form.file_uploads.first.file_name = ufname
       form.radiobutton_with(:name => "OVERWRITE", :value => "Y").check
       form.radiobutton_with(:name => "TEST", :value => "").check
 
       form.submit
       mbkloginfo(__FILE__, "done uploading!")
-      #File.delete(ufname)
+      File.delete(ufname)
     }
   end
   #mbk_db_unlock()
