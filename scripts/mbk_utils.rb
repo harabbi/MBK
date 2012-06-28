@@ -13,6 +13,7 @@ def mbk_volusion_login(app)
   $log.info "Starting Mechanize..."
   begin
     $a = Mechanize.new
+    $a.keep_alive
     $a.get("#{MBK_VOLUSION_URL}/admin") do |page|
   	  page.form_with(:name => 'loginform') do |f|
   	    f.email = MBK_VOLUSION_USER
@@ -31,7 +32,7 @@ def init_mbk_mysql_logger
   $con = mbk_db_connect() unless $con
   $con.execute("create database if not exists mbk")
   $con.execute("use mbk")
-  $con.execute("create table if not exists log (`tm` timestamp,`appname` varchar(2048),`username` varchar(255),`pid` int,`logtype` varchar(255), `uuid` bigint, `read` tinyint, `message` text)")  
+  $con.execute("create table if not exists log (`tm` datetime,`appname` varchar(2048),`username` varchar(255),`pid` int,`logtype` varchar(255), `uuid` bigint, `read` tinyint, `message` text)")  
 end
 #_______________________________________________________________________________
 def mbklogerr(app,msg)
@@ -81,7 +82,7 @@ end
 def mbk_app_init(appname)
   begin
     $pf = PidFile.new
-    $uuid = ((Time.now.to_f*10)%10000000).round(0)
+    $uuid = ($pf.pid.to_s + Time.now.to_i.to_s).to_i
   rescue
     mbklogerr(appname, "ALREADY RUNNING")
   end
