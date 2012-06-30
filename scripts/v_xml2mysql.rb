@@ -79,7 +79,8 @@ Dir.glob("*.xml").each() { |xml_document|
       fout.write(MBK_XML_HEADER) if fi > 0
       fout.write(f.read(MBK_XML_MAX_FILE_SIZE.to_i))
       strmatch = "</#{tbl}>"
-      fout.write((str = f.read(strmatch.length)))
+      str = f.read(strmatch.length)
+      #fout.write(str)
       until str.eql?(strmatch) or f.eof?
         fout.write(str.slice!(0))
         str << f.read(1)
@@ -88,9 +89,11 @@ Dir.glob("*.xml").each() { |xml_document|
       fout.write(MBK_XML_FOOTER)
       fout.close
     }
-    fout = File.open("#{xmlpartdir}/#{tbl}_#{((f.size/MBK_XML_MAX_FILE_SIZE.to_i).floor+1).to_s}.part", "w")
-    fout.write(MBK_XML_HEADER) if f.pos > 0
-    fout.write(f.read((f.size-f.pos)))
+    if not f.eof?
+      fout = File.open("#{xmlpartdir}/#{tbl}_#{((f.size/MBK_XML_MAX_FILE_SIZE.to_i).floor).to_s}.part", "w")
+      fout.write(MBK_XML_HEADER) if f.pos > 0
+      fout.write(f.read((f.size-f.pos)))
+    end
     fout.close
     f.close
     File.delete(xml_document)
