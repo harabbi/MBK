@@ -86,16 +86,16 @@ def get_db_columns(db, tbl)
 end
 #_______________________________________________________________________________
 def mbk_app_init(appname)
+  $log = Syslogger.new("#{appname}", Syslog::LOG_PID, Syslog::LOG_LOCAL0)
+  $log.level = Logger::INFO
+  $con = mbk_db_connect() 
+  init_mbk_mysql_logger
   begin
     $pf = PidFile.new
     $uuid = ($pf.pid.to_s + Time.now.to_i.to_s).to_i
   rescue
     mbklogerr(appname, "ALREADY RUNNING")
   end
-  $log = Syslogger.new("#{appname}", Syslog::LOG_PID, Syslog::LOG_LOCAL0)
-  $log.level = Logger::INFO
-  $con = mbk_db_connect() 
-  init_mbk_mysql_logger
   mbkloginfo(appname, "started")
 end
 #_______________________________________________________________________________

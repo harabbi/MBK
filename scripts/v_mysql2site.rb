@@ -78,9 +78,7 @@ $con.tables.each() do |t|
       $a.get("https://www.modeltrainstuff.com/admin/db_import.asp")
       form = $a.page.forms.first
 
-      import_table = t
-      import_table = "Products" if t == "Products_Joined"
-      form.field_with(:name => "import_type").value = import_table
+      form.field_with(:name => "import_type").value = (t == "Products_Joined") ? t : "Products" 
       form.file_uploads.first.file_name = ufname
       form.radiobutton_with(:name => "OVERWRITE", :value => "Y").check
       form.radiobutton_with(:name => "TEST", :value => "").check
