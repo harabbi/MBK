@@ -40,9 +40,7 @@ mbk_app_init(__FILE__)
 
 export_table = ARGV[0].to_s
 export_table = "mbk_volusion_export_#{Time.now.strftime("%Y%m%d")}" if export_table.length < 1
-
-$con.execute("create database if not exists #{export_table}")
-$con.execute("use #{export_table}")
+mbk_db_create_run(export_table)
 
 MBK_XML_HEADER = "<?xml version=\"1.0\" encoding=\"iso-8859-1\"?><Export>"
 MBK_XML_FOOTER = "</Export>"

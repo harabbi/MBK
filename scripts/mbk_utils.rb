@@ -71,6 +71,18 @@ def mbk_db_connect()
   end
 end
 #_______________________________________________________________________________
+def mbk_db_create_run(db)
+  init_mbk_mysql_logger
+  $con.execute("CREATE TABLE IF NOT EXISTS `mbk`.`runs` (`id` bigint(20) NOT NULL AUTO_INCREMENT,`tm` datetime DEFAULT NULL,`dbname` varchar(255) NOT NULL DEFAULT '',PRIMARY KEY (`id`),UNIQUE KEY `dbname` (`dbname`)) ENGINE=MyISAM DEFAULT CHARSET=latin1;")
+  begin
+    $con.execute("INSERT INTO  `mbk`.`runs` (`tm` ,`dbname`) VALUES (NOW(), '#{db}')")
+  rescue
+  end
+  $con.execute("create database if not exists #{db}")
+  $con.execute("use #{db}")
+  return db
+end
+#_______________________________________________________________________________
 def mbk_db_lock_table(tbl)
   $con.execute("LOCK TABLES #{tbl} WRITE")
 end
