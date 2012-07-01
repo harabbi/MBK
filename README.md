@@ -9,7 +9,16 @@
 4- Edit tableToDownload to include only the tables wanted
 
 5- Type this command
-        export_volusion_xml.sh <output database name>
-
+        crontab -e    #to edit the cron daemon. Add the application run intervals
+        example crontab...
+          SHELL=/bin/bash
+          PATH=/sbin:/bin:/usr/sbin:/usr/bin:/home/<mbk>/.rvm/rubies/ruby-1.9.3-p194/bin
+          BASH_ENV=/home/<mbk>/.bashrc
+          MAILTO=<mbkadmin>@gmail.com
+          0 0  * * * /bin/bash -c -l "/home/<mbk>/run_v_site2xml.sh"
+          */10 * * * * /bin/bash -c -l "/home/<mbk>/run_v_xml2mysql.sh"
+          */10 * * * * /bin/bash -c -l "/home/<mbk>/run_v_mysql2site.sh"
+          */10 * * * * /bin/bash -c -l "/home/<mbk>/run_v_hsm.sh"
+~                                                             
 
 Enjoy!
