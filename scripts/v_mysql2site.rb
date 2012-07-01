@@ -64,13 +64,13 @@ $con.tables.each() do |t|
       s.chomp!(",")
       s << "\n"
 
-      File.open("#{csvdir}/#{t}_#{i}.csv", "a+") { |f|
-         f.write(s); 
-         if f.pos > MAX_CSV_SIZE
-           i.next!
-           colhdr = true
-         end
-       }
+      File.open("#{csvdir}/#{t}_#{i}.csv", "a+") do |f|
+        f.write(s); 
+        if f.pos > MAX_CSV_SIZE
+          i.next!
+          colhdr = true
+        end
+      end
     end
     i.to_i.times() { |cnt|
       ufname = "#{csvdir}/#{t}_#{(cnt+1).to_s}.csv"
@@ -78,7 +78,7 @@ $con.tables.each() do |t|
       $a.get("https://www.modeltrainstuff.com/admin/db_import.asp")
       form = $a.page.forms.first
 
-      form.field_with(:name => "import_type").value = (t == "Products_Joined") ? t : "Products" 
+      form.field_with(:name => "import_type").value = t
       form.file_uploads.first.file_name = ufname
       form.radiobutton_with(:name => "OVERWRITE", :value => "Y").check
       form.radiobutton_with(:name => "TEST", :value => "").check
