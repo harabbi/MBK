@@ -72,7 +72,7 @@ $con.tables.each() do |t|
         end
       end
     end
-    i.to_i.times() { |cnt|
+    i.to_i.times() do |cnt|
       ufname = "#{csvdir}/#{t}_#{(cnt+1).to_s}.csv"
       mbkloginfo(__FILE__, "Uploading #{ufname}...")
       $a.get("https://www.modeltrainstuff.com/admin/db_import.asp")
@@ -84,9 +84,15 @@ $con.tables.each() do |t|
       form.radiobutton_with(:name => "TEST", :value => "").check
 
       form.submit
-      mbkloginfo(__FILE__, "done uploading!")
-      File.delete(ufname)
-    }
+
+      if $a.page.body.include? "Import Duration"
+        mbkloginfo(__FILE__, "done uploading!")
+        File.delete(ufname)
+      else
+        mbklogerror(__FILE__, "#{ufname} failed to upload!")
+        FileUtils.mv(ufname, ufname + ".failed_#{Time.now.to_i.to_s}")
+      end
+    end
   end
   #mbk_db_unlock()
 end
