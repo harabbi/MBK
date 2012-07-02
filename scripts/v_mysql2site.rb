@@ -84,13 +84,12 @@ $con.tables.each() do |t|
       form.radiobutton_with(:name => "TEST", :value => "").check
 
       form.submit
-
       if $a.page.body.include? "Import Duration"
         mbkloginfo(__FILE__, "done uploading!")
         File.delete(ufname)
       else
         mbklogerror(__FILE__, "#{ufname} failed to upload!")
-        FileUtils.mv(ufname, ufname + ".failed_#{Time.now.to_i.to_s}")
+        FileUtils.mv(ufname, "#{ufname}.failed_#{Time.now.to_i.to_s}")
       end
     end
   end

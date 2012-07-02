@@ -23,7 +23,7 @@ def mbk_volusion_login(app)
   	mbkloginfo(app, "Logged in, starting task...")
   	return $a
   rescue
-    mbklogerr(app, $!)
+    mbklogerr(app, "#{$!}")
     return nil
   end
 end
