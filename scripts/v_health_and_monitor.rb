@@ -38,11 +38,11 @@ $con.execute('drop table mbk.t_uuid')
 
 #Look for runs that haven't finished that are older than 2 hrs
 $con.execute('create temporary table mbk.t_uuid (select uuid from mbk.log where `read`=0 and message="started" and tm < date_sub(now(), interval 2 hour))')
-message = "The following apps have not finished clean within 2 hrs of starting:\n\n"
+message = ""
 $con.select_all('select * from mbk.log where `read`=0 and message="started" and tm < date_sub(now(), interval 2 hour)').each do |r|
   message << "#{r["appname"]}(PID: #{r["pid"]}) started at #{r["tm"]} has not reported an exit.\n\n#{r["message"]}"
 end
-mbk_send_mail("APP(s) STALLED OR UNCLEAN FINISH", message)
+mbk_send_mail("APP(s) STALLED OR UNCLEAN FINISH", "The following apps have not finished clean within 2 hrs of starting:\n\n#{message}") unless message.blank?
 
 #Now mark those as read as well
 $con.execute('update mbk.log set `read`=1 where uuid in (select uuid from mbk.t_uuid)')
