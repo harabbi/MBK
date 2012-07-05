@@ -13,7 +13,7 @@ def mbk_volusion_login(app)
   $log.info "Starting Mechanize..."
   begin
     $a = Mechanize.new
-    $a.keep_alive
+    $a.keep_alive = false
     $a.get("#{MBK_VOLUSION_URL}/admin") do |page|
   	  page.form_with(:name => 'loginform') do |f|
   	    f.email = MBK_VOLUSION_USER

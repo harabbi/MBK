@@ -29,15 +29,25 @@ IO.readlines("#{Dir.pwd}/tablesToDownload").each do |table_name|
   	$a.get('https://www.modeltrainstuff.com/admin/db_export.asp')
   end
 
-	form = $a.page.forms.first
-  form.field_with(:name => "Table").value = table_name.strip
-	form.checkbox_with(:name => "disregard", :value => table_name.strip).check
-	form.checkboxes.each do |c|
-		c.check if c.value.split(".").first == table_name.strip
-	end
-	form.field_with(:name => "FileType").value="XML"
-  mbkloginfo(__FILE__, "   Compiling...")
-	form.submit
+  try=1
+  begin
+    form = $a.page.forms.first
+    form.field_with(:name => "Table").value = table_name.strip
+    form.checkbox_with(:name => "disregard", :value => table_name.strip).check
+    form.checkboxes.each do |c|
+      c.check if c.value.split(".").first == table_name.strip
+    end
+    form.field_with(:name => "FileType").value="XML"
+    mbkloginfo(__FILE__, "   Compiling... (try #{try})")
+    form.submit
+  rescue Timeout::Error
+    try+=1
+    mbklogerr(__FILE__, "#{table_name.strip} xml did not finish compiling!")
+    if try < 4
+      $a = mbk_volusion_login(__FILE__)
+      retry
+    end
+  end
 
 	mbkloginfo(__FILE__, "   Downloading...")
   begin 
