@@ -38,9 +38,10 @@ end
 
 mbk_app_init(__FILE__)
 
-export_table = ARGV[0].to_s
-export_table = "mbk_volusion_export_#{Time.now.strftime("%Y%m%d")}" if export_table.length < 1
-mbk_db_create_run(export_table)
+export_db = ARGV[0].to_s
+export_db = "mbk_volusion_export_#{Time.now.strftime("%Y%m%d")}" if export_db.length < 1
+mbk_db_create_run(export_db)
+$a = mbk_volusion_login(__FILE__)
 
 MBK_XML_HEADER = "<?xml version=\"1.0\" encoding=\"iso-8859-1\"?><Export>"
 MBK_XML_FOOTER = "</Export>"
@@ -50,33 +51,82 @@ MBK_XML_PART_DIR ||= "xml_part"
 cols = {}
 coldir = "#{Dir.pwd}/#{MBK_DATA_DIR}/volusion/export/sql"
 xmldir = "#{Dir.pwd}/#{MBK_DATA_DIR}/volusion/export/xml"
+outdir = "#{Dir.pwd}/#{MBK_DATA_DIR}/volusion/export"
 xmlpartdir = "#{Dir.pwd}/#{MBK_DATA_DIR}/volusion/export/xml_part"
 #____________________________________________________________________________
 #split xml into parts place them in xmlpartdir
 mbk_create_dir(xmldir)
 mbk_create_dir(xmlpartdir)
 
-Dir.chdir(xmldir)
-Dir.glob("*.xml").each() { |xml_document|
+IO.readlines("#{Dir.pwd}/tablesToDownload").each do |table_name|
+  table_name.strip!
+  xml_document = "#{table_name}.xml"
+  
+  mbkloginfo(__FILE__, "#{table_name}...")
+
   begin
-    f = File.open("#{xmldir}/#{xml_document}"); doc = Nokogiri::XML(f); f.close
-    tbl_name = get_table_name_from_xml(doc)
-    mbkloginfo(__FILE__, "Creating table #{tbl_name}...")
-    $con.execute(IO.read("#{coldir}/#{tbl_name}.sql"))
-    File.delete("#{coldir}/#{tbl_name}.sql")
-  rescue
-    mbklogerr(__FILE__, "ERROR: could create table #{tbl_name}....#{$!}")
+  	$a.get('https://www.modeltrainstuff.com/admin/db_export.asp')
+  rescue Timeout::Error
+    mbkloginfo(__FILE__, "Connection timed out before #{table_name} could start, going to reconnect...")
+    $a = mbk_volusion_login(__FILE__)
+  	$a.get('https://www.modeltrainstuff.com/admin/db_export.asp')
   end
-  cols = get_db_columns(export_table, tbl_name)
+
+  try=1
+  begin
+    form = $a.page.forms.first
+    form.field_with(:name => "Table").value = table_name
+    form.checkbox_with(:name => "disregard", :value => table_name).check
+    form.checkboxes.each do |c|
+      c.check if c.value.split(".").first == table_name.strip
+    end
+    form.field_with(:name => "FileType").value="XML"
+    mbkloginfo(__FILE__, "   Compiling... (try #{try})")
+    form.submit
+  rescue Timeout::Error
+    try+=1
+    if try < 4
+      $a = mbk_volusion_login(__FILE__)
+      retry
+    end
+    mbklogerror(__FILE__, "#{table_name} xml did not finish compiling... #{$!}!")
+  end
+
+	mbkloginfo(__FILE__, "   Downloading...")
+  begin 
+    $a.download($a.page.link_with(:text => "Click here to download your file").uri,
+              File.open("#{outdir}/#{xml_document}", "w"))
+    FileUtils.mv("#{outdir}/#{xml_document}", "#{xmldir}/#{xml_document}")
+    mbkloginfo(__FILE__, "Done with #{table_name}!")
+  rescue
+    mbklogerr(__FILE__, "#{xml_document} did not download!")
+  end
   
   begin
-    tbl =  xml_document.split(".").first
-    f = File.open(xml_document, "r")
+    f = File.open("#{xmldir}/#{xml_document}"); 
+    doc = Nokogiri::XML(f); 
+    f.close
+  rescue
+    mbklogerr(__FILE__, "ERROR: could not read xml file  #{xml_document}....#{$!}")
+  end
+  
+  begin
+    mbkloginfo(__FILE__, "Creating table #{table_name}...")
+    $con.execute(IO.read("#{coldir}/#{table_name}.sql"))
+  rescue
+    mbklogerr(__FILE__, "ERROR: could create table #{table_name}....#{$!}")
+  end
+  File.delete("#{coldir}/#{table_name}.sql")
+  
+  cols = get_db_columns(export_db, table_name)
+  
+  begin
+    f = File.open("#{xmldir}/#{xml_document}", "r")
     (f.size/MBK_XML_MAX_FILE_SIZE.to_i).floor.times() { |fi|
-      fout = File.open("#{xmlpartdir}/#{tbl}_#{fi}.part", "w")
+      fout = File.open("#{xmlpartdir}/#{table_name}_#{fi}.part", "w")
       fout.write(MBK_XML_HEADER) if fi > 0
       fout.write(f.read(MBK_XML_MAX_FILE_SIZE.to_i))
-      strmatch = "</#{tbl}>"
+      strmatch = "</#{table_name}>"
       str = f.read(strmatch.length)
       #fout.write(str)
       until str.eql?(strmatch) or f.eof?
@@ -88,23 +138,25 @@ Dir.glob("*.xml").each() { |xml_document|
       fout.close
     }
     if not f.eof?
-      fout = File.open("#{xmlpartdir}/#{tbl}_#{((f.size/MBK_XML_MAX_FILE_SIZE.to_i).floor).to_s}.part", "w")
+      fout = File.open("#{xmlpartdir}/#{table_name}_#{((f.size/MBK_XML_MAX_FILE_SIZE.to_i).floor).to_s}.part", "w")
       fout.write(MBK_XML_HEADER) if f.pos > 0
       fout.write(f.read((f.size-f.pos)))
     end
     fout.close
     f.close
-    File.delete(xml_document)
+    File.delete("#{xmldir}/#{xml_document}")
   rescue
     mbklogerr(__FILE__,"ERROR: could not split xml file #{xml_document}....#{$!}")
   end
-}
+end
+
 #____________________________________________________________________________
 #read split xml in xmlpartdir and insert into mysql
 mbkloginfo(__FILE__, "Entering #{xmlpartdir}...")
 
 Dir.chdir(xmlpartdir)
 Dir.glob("*.part").each() { |xml_document|
+
   f = File.open("#{xmlpartdir}/#{xml_document}"); doc = Nokogiri::XML(f); f.close
   mbkloginfo(__FILE__, "Parsing file #{xml_document}...")
   tbl_name = get_table_name_from_xml(doc)
