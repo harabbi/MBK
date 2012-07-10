@@ -65,7 +65,7 @@ Dir.glob("*.xml").each() { |xml_document|
     $con.execute(IO.read("#{coldir}/#{tbl_name}.sql"))
     File.delete("#{coldir}/#{tbl_name}.sql")
   rescue
-    mbklogerr(__FILE__, "ERROR: could create table #{tbl_name}....#{$!}")
+    mbklogerr(__FILE__, "ERROR: could not create table #{tbl_name}....#{$!}")
   end
   cols = get_db_columns(export_table, tbl_name)
   
