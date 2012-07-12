@@ -99,11 +99,7 @@ IO.readlines("#{Dir.pwd}/tablesToDownload").each do |table_name|
     FileUtils.mv("#{outdir}/#{xml_document}", "#{xmldir}/#{xml_document}")
     mbkloginfo(__FILE__, "Done with #{table_name}!")
   rescue
-<<<<<<< HEAD:scripts/v_xml2mysql.rb
-    mbklogerr(__FILE__, "ERROR: could not create table #{tbl_name}....#{$!}")
-=======
     mbklogerr(__FILE__, "#{xml_document} did not download!")
->>>>>>> f5049d54c725a55415f8a2811894f3e4d64061dd:scripts/v_site2mysql.rb
   end
   
   begin
