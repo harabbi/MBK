@@ -1,7 +1,6 @@
 $: << File.dirname(__FILE__) unless $:.include? File.dirname(__FILE__)
 
 require 'mbk_utils.rb'
-require 'savon'
 
 at_exit do
   if $!.nil? || $!.is_a?(SystemExit) && $!.success?
@@ -18,16 +17,8 @@ export_db = ARGV[0].to_s
 export_db = "mbk_grandriver_export_#{Time.now.strftime("%Y%m%d")}" if export_db.length < 1
 mbk_db_create_run(export_db)
 
-client = Savon::Client.new do
-  wsdl.document = "http://www.mbk.thegrandriver.net/index.php/api/?wsdl"
-end
-client.http.auth.basic "mbk", "mbkp@ss"
-
-response = client.request :login do
-  soap.body = { :username => 'philz', :apiKey => 'apikey' }
-end
-
-session =  response[:login_response][:login_return]
+client  = mbk_magento_init()
+session = mbk_magento_login(client)
 
 keys = [] # define outside scope of loop
 products = []

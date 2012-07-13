@@ -7,7 +7,24 @@ require 'pidfile'
 require 'mbk_params.rb'
 require 'fileutils'
 require 'mail'
+require 'savon'
 
+#_______________________________________________________________________________
+def mbk_magento_init()
+  client = Savon::Client.new do
+    wsdl.document = "#{MBK_MAGENTO_URL}"
+  end
+  client.http.auth.basic "#{MBK_MAGENTO_USER}", "#{MBK_MAGENTO_PASS}"
+  return client
+end
+#_______________________________________________________________________________
+def mbk_magento_login(client)
+  response = client.request :login do 
+    soap.body = { :username => "#{MBK_MAGENTO_SOAP_USER}", :apiKey => "#{MBK_MAGENTO_SOAP_APIKEY}" } 
+  end
+  session  = response[:login_response][:login_return]
+  return session
+end
 #_______________________________________________________________________________
 def mbk_volusion_login(app)
   $log.info "Starting Mechanize..."
