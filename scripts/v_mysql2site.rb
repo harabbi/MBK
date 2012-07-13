@@ -88,7 +88,7 @@ $con.tables.each() do |t|
         mbkloginfo(__FILE__, "done uploading!")
         File.delete(ufname)
       else
-        mbklogerror(__FILE__, "#{ufname} failed to upload!")
+        mbklogerr(__FILE__, "#{ufname} failed to upload!")
         FileUtils.mv(ufname, "#{ufname}.failed_#{Time.now.to_i.to_s}")
       end
     end

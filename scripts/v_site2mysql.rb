@@ -66,7 +66,7 @@ IO.readlines("#{Dir.pwd}/tablesToDownload").each do |table_name|
 
   begin
   	$a.get('https://www.modeltrainstuff.com/admin/db_export.asp')
-  rescue Timeout::Error
+  rescue
     mbkloginfo(__FILE__, "Connection timed out before #{table_name} could start, going to reconnect...")
     $a = mbk_volusion_login(__FILE__)
   	$a.get('https://www.modeltrainstuff.com/admin/db_export.asp')
@@ -83,13 +83,13 @@ IO.readlines("#{Dir.pwd}/tablesToDownload").each do |table_name|
     form.field_with(:name => "FileType").value="XML"
     mbkloginfo(__FILE__, "   Compiling... (try #{try})")
     form.submit
-  rescue Timeout::Error
+  rescue
     try+=1
     if try < 4
       $a = mbk_volusion_login(__FILE__)
       retry
     end
-    mbklogerror(__FILE__, "#{table_name} xml did not finish compiling... #{$!}!")
+    mbklogerr(__FILE__, "#{table_name} xml did not finish compiling... #{$!}!")
   end
 
 	mbkloginfo(__FILE__, "   Downloading...")
