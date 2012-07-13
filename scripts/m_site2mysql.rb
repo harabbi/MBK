@@ -1,6 +1,7 @@
 $: << File.dirname(__FILE__) unless $:.include? File.dirname(__FILE__)
 
 require 'mbk_utils.rb'
+require 'savon'
 
 at_exit do
   if $!.nil? || $!.is_a?(SystemExit) && $!.success?
@@ -17,43 +18,74 @@ export_db = ARGV[0].to_s
 export_db = "mbk_grandriver_export_#{Time.now.strftime("%Y%m%d")}" if export_db.length < 1
 mbk_db_create_run(export_db)
 
-require 'savon'
-
 client = Savon::Client.new do
   wsdl.document = "http://www.mbk.thegrandriver.net/index.php/api/?wsdl"
-  end
+end
+client.http.auth.basic "mbk", "mbkp@ss"
 
-  client.http.auth.basic "mbk", "mbkp@ss"
+response = client.request :login do
+  soap.body = { :username => 'philz', :apiKey => 'apikey' }
+end
 
-  response = client.request :login do
-    soap.body = { :username => 'philz', :apiKey => 'apikey' }
-  end
+session =  response[:login_response][:login_return]
 
-  session =  response[:login_response][:login_return]
+keys = [] # define outside scope of loop
+products = []
+prices = []
+price_keys = []
 
-  first = last = false
-  LAST_ID = 142
-  x=139
-  products = {}
-  while(!last and x < LAST_ID)
-    begin
-      response = client.request :call do soap.body = {:session => session,:method => 'catalog_product.info', :id=>x } end
-      first = true
-      products[x] = {}; response[:call_response][:call_return][:item].each{|pair| products[x][pair[:key]] = pair[:value]}
-      puts "Got #{x}"
-    rescue
-      puts "#{x} failed"
-      if first
-        last = true
-      end
+LAST_ID = 142
+START_ID = x = 139
+while(x < LAST_ID)
+  values = [] # ensure empty
+  price_values = ["#{x}"]
+  #begin
+    response = client.request :call do 
+      soap.body = {:session => session,:method => 'catalog_product.info', :id=>x } 
     end
-    x+=1
-  end
-
-  File.open("test_#{Time.now.to_i}.txt", "w") do |f|
-    f.puts products[products.keys.first].keys.join(",_")
-    products.keys.each do |k|
-      f.puts "#{k}:"
-      f.puts products[k].values.join(",_")
+    response[:call_response][:call_return][:item].each do |pair| 
+      keys.push pair[:key] if x == START_ID
+      case pair[:value]
+      when Nori::StringWithAttributes
+        values.push pair[:value]
+      when Hash
+        if pair[:key] == "tier_price"
+          if pair[:value][:item]
+            price_keys = ["product_id"]
+            pair[:value][:item].each do |price| 
+              price[:item].each do |attr| 
+                price_keys.push(attr[:key])
+                price_values.push(attr[:value])
+              end
+            end
+            prices.push price_values.join(',')
+          else
+            price_values.push ""
+          end
+        else
+          values.push pair[:value][:item]
+        end
+      when NilClass
+        values.push ""
+      end 
     end
+  #rescue
+    #puts "#{x} failed"
+  #end
+  x+=1
+  products.push values.join(',')
+end
+
+File.open("test.csv", "w") do |f| 
+  f.write "#{keys.join(',')}\n"
+  products.each do |p| 
+    f.write "#{p}\n"
   end
+end
+
+File.open("price.csv", "w") do |f|
+  f.write "#{price_keys.join(',')}\n"
+  prices.each do |p|
+    f.write "#{p}\n"
+  end
+end
