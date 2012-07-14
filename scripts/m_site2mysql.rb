@@ -67,12 +67,9 @@ while(x < LAST_ID)
   products.push values.join(',')
 end
 
-File.open("test.csv", "w") do |f| 
-  f.write "#{keys.join(',')}\n"
-  products.each do |p| 
-    f.write "#{p}\n"
-  end
-end
+mbk_db_create_table(export_db, "catalog_product", keys) 
+mbk_db_insert_values(export_db, "catalog_product", keys, values) 
+
 
 File.open("price.csv", "w") do |f|
   f.write "#{price_keys.join(',')}\n"

@@ -29,14 +29,14 @@ $con.tables.each() do |t|
   colhdr = true
   i = "1"
   #mbk_db_lock_table(t)
-  rs = $con.select_all("select * from #{t} where ready_to_import=true")
+  rs = $con.select_all("select * from #{t} where mbk_ready_to_import=true")
   if rs.size > 0
     mbkloginfo(__FILE__, "Found #{rs.size} update(s) in table...#{t}") 
     rs.each do |r|
-      $con.execute("update #{t} set `ready_to_import`=false where `#{r.keys.first}`='#{r[r.keys.first]}'")
-      r.delete("ready_to_import")
-      r.delete("updated_at")
-      r.delete("created_at")
+      $con.execute("update #{t} set `mbk_ready_to_import`=false where `#{r.keys.first}`='#{r[r.keys.first]}'")
+      r.delete("mbk_ready_to_import")
+      r.delete("mbk_updated_at")
+      r.delete("mbk_created_at")
     
       if t == "Customers"
         r.delete("password") 

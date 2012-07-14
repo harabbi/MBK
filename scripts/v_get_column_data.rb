@@ -61,7 +61,7 @@ IO.readlines("#{Dir.pwd}/tablesToDownload").each do |table_name|
       cnt.next!
 		end
 	end
-	s <<" `ready_to_import` BOOLEAN DEFAULT FALSE, `updated_at` TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, `created_at` DATETIME DEFAULT NULL) ENGINE=MyISAM;"
+	s <<" `mbk_ready_to_import` BOOLEAN DEFAULT FALSE, `mbk_updated_at` TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, `mbk_created_at` DATETIME DEFAULT NULL) ENGINE=MyISAM;"
   cf.write s
 	cf.close
 end

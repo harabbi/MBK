@@ -160,7 +160,7 @@ Dir.glob("*.part").each() { |xml_document|
   f = File.open("#{xmlpartdir}/#{xml_document}"); doc = Nokogiri::XML(f); f.close
   mbkloginfo(__FILE__, "Parsing file #{xml_document}...")
   tbl_name = get_table_name_from_xml(doc)
-  ins = "(#{get_table_flds_from_xml(doc, tbl_name).join(",")},`ready_to_import`,`updated_at`,`created_at`)"
+  ins = "(#{get_table_flds_from_xml(doc, tbl_name).join(",")},`mbk_ready_to_import`,`mbk_updated_at`,`mbk_created_at`)"
   #mbk_db_lock_table(tbl_name)
   doc.xpath("//#{tbl_name}").each { |node|
     s =  "insert ignore into #{tbl_name} #{ins} values ("

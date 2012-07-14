@@ -114,6 +114,31 @@ def get_db_columns(db, tbl)
   return cols
 end
 #_______________________________________________________________________________
+def mbk_db_create_table(db, tbl, cols)  
+  s = "CREATE TABLE IF NOT EXISTS `#{db}`.`#{tbl}` ( "
+  cols.each() { |k| s << "`#{k}` text, " }
+	s << " `mbk_ready_to_import` BOOLEAN DEFAULT FALSE, `mbk_updated_at` TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, `mbk_created_at` DATETIME DEFAULT NULL) ENGINE=MyISAM;"
+  begin
+    $con.execute("#{s}")
+  rescue
+    mbklogerr(__FILE__, "ERROR creating table!...#{$!}")
+  end
+end
+#_______________________________________________________________________________
+def mbk_db_insert_values(db, tbl, cols, vals) 
+  s = "INSERT INTO `#{db}`.`#{tbl}` ("
+  cols.each() { |k| s << "`#{k}`,"  }
+  s <<  "`mbk_ready_to_import`,`mbk_updated_at`,`mbk_created_at`) VALUES ("
+  vals.each() { |v| s << "#{$con.quote(v)}," }
+  s << "false, NOW(), NOW());"
+  begin
+    puts s
+    $con.execute("#{s}")
+  rescue
+    mbklogerr(__FILE__, "ERROR inserting row!...#{$!}")
+  end
+end
+#_______________________________________________________________________________
 def mbk_app_init(appname)
   $log = Syslogger.new("#{appname}", Syslog::LOG_PID, Syslog::LOG_LOCAL0)
   $log.level = Logger::INFO
