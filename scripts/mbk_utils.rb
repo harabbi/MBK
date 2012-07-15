@@ -129,11 +129,15 @@ def mbk_db_insert_values(db, tbl, cols, vals)
   s = "INSERT INTO `#{db}`.`#{tbl}` ("
   cols.each() { |k| s << "`#{k}`,"  }
   s <<  "`mbk_ready_to_import`,`mbk_updated_at`,`mbk_created_at`) VALUES ("
-  vals.each() { |v| s << "#{$con.quote(v)}," }
-  s << "false, NOW(), NOW());"
+  vals.push(false)
+  vals.push("NOW()")
+  vals.push("NOW()")
+  vals.each() { |v| s << "?," }
+  s[s.length-1] = ")"
   begin
-    puts s
-    $con.execute("#{s}")
+    sql_arr = [s] + vals   
+    s = ActiveRecord::Base.send(:sanitize_sql_array,sql_arr)
+    res = $con.execute(s)
   rescue
     mbklogerr(__FILE__, "ERROR inserting row!...#{$!}")
   end

@@ -25,12 +25,12 @@ products = []
 prices = []
 price_keys = []
 
-LAST_ID = 142
+LAST_ID = 10000
 START_ID = x = 139
 while(x < LAST_ID)
   values = [] # ensure empty
   price_values = ["#{x}"]
-  #begin
+  begin
     response = client.request :call do 
       soap.body = {:session => session,:method => 'catalog_product.info', :id=>x } 
     end
@@ -60,15 +60,17 @@ while(x < LAST_ID)
         values.push ""
       end 
     end
-  #rescue
-    #puts "#{x} failed"
-  #end
+  rescue Savon::Error => error
+    mbklogerr(__FILE__, error.to_s)
+  end
+
   x+=1
+  keys.delete_if {|k| k == "tier_price" }
+  mbk_db_create_table(export_db, "catalog_product", keys) 
+  mbk_db_insert_values(export_db, "catalog_product", keys, values) 
+  
   products.push values.join(',')
 end
-
-mbk_db_create_table(export_db, "catalog_product", keys) 
-mbk_db_insert_values(export_db, "catalog_product", keys, values) 
 
 
 File.open("price.csv", "w") do |f|
