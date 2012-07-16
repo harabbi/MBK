@@ -181,17 +181,6 @@ def mbk_db_insert_values(db, tbl, cols, vals)
   end
 end
 #_______________________________________________________________________________
-def mbk_mage_soap_call(client, method)
-  begin
-    response = client.request :call do 
-      soap.body = {:session => session,:method => "#{method}" } 
-    end  
-  rescue Savon::Error => error
-    mbklogerr(__FILE__, error.to_s)
-  end
-  return response
-end
-#_______________________________________________________________________________
 def mbk_app_init(appname)
   $log = Syslogger.new("#{appname}", Syslog::LOG_PID, Syslog::LOG_LOCAL0)
   $log.level = Logger::INFO
