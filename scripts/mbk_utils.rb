@@ -10,7 +10,13 @@ require 'mail'
 require 'savon'
 
 #_______________________________________________________________________________
-def mbk_magento_init()
+def mbk_magento_init(app)
+  Savon.configure do |config|
+    config.log = false             # disable logging
+    #config.log_level = :info      # changing the log level
+    #config.logger = Rails.logger  # using the Rails logger
+  end
+
   client = Savon::Client.new do
     wsdl.document = "#{MBK_MAGENTO_URL}"
   end
@@ -18,12 +24,44 @@ def mbk_magento_init()
   return client
 end
 #_______________________________________________________________________________
-def mbk_magento_login(client)
+def mbk_magento_login(app, client)
   response = client.request :login do 
     soap.body = { :username => "#{MBK_MAGENTO_SOAP_USER}", :apiKey => "#{MBK_MAGENTO_SOAP_APIKEY}" } 
   end
+  if response.success? == false
+    mbklogerr(app, "login failed #{$!}")
+  end
   session  = response[:login_response][:login_return]
   return session
+end
+#_______________________________________________________________________________
+def mbk_magento_logout(client, session)
+  response = client.request :endSession do
+    soap.body = {:session => session}
+  end
+end
+#_______________________________________________________________________________
+def mbk_mage_get_list(client, session, tbl)
+  response = client.request :call do
+    soap.body = {:session => session, :method => "#{tbl}.list" }
+  end
+  arr = Array.new
+  if response.success?
+    response[:call_response][:call_return][:item].each do |item| 
+      h = Hash.new
+      item = item[:item]
+      item.each do |p|
+        case p[:value]
+        when Nori::StringWithAttributes
+          h[(p[:key])] = p[:value]
+        when NilClass
+          h[(p[:key])] = ""
+        end
+      end
+      arr.push(h) 
+    end
+  end
+  return arr
 end
 #_______________________________________________________________________________
 def mbk_volusion_login(app)
@@ -141,6 +179,17 @@ def mbk_db_insert_values(db, tbl, cols, vals)
   rescue
     mbklogerr(__FILE__, "ERROR inserting row!...#{$!}")
   end
+end
+#_______________________________________________________________________________
+def mbk_mage_soap_call(client, method)
+  begin
+    response = client.request :call do 
+      soap.body = {:session => session,:method => "#{method}" } 
+    end  
+  rescue Savon::Error => error
+    mbklogerr(__FILE__, error.to_s)
+  end
+  return response
 end
 #_______________________________________________________________________________
 def mbk_app_init(appname)

@@ -17,65 +17,19 @@ export_db = ARGV[0].to_s
 export_db = "mbk_grandriver_export_#{Time.now.strftime("%Y%m%d")}" if export_db.length < 1
 mbk_db_create_run(export_db)
 
-client  = mbk_magento_init()
-session = mbk_magento_login(client)
+client  = mbk_magento_init(__FILE__)
+session = mbk_magento_login(__FILE__,client)
 
-keys = [] # define outside scope of loop
-products = []
-prices = []
-price_keys = []
+tbls = ["customer","catalog_category_attribute"]
+tbls.each() { |tbl|
+  mbk_mage_get_list(client, session, tbl).each() { |h|
+    mbk_db_create_table(export_db, tbl, h.keys) 
+    mbk_db_insert_values(export_db, tbl, h.keys, h.values) 
+  }
+}
 
-LAST_ID = 10000
-START_ID = x = 139
-while(x < LAST_ID)
-  values = [] # ensure empty
-  price_values = ["#{x}"]
-  begin
-    response = client.request :call do 
-      soap.body = {:session => session,:method => 'catalog_product.info', :id=>x } 
-    end
-    response[:call_response][:call_return][:item].each do |pair| 
-      keys.push pair[:key] if x == START_ID
-      case pair[:value]
-      when Nori::StringWithAttributes
-        values.push pair[:value]
-      when Hash
-        if pair[:key] == "tier_price"
-          if pair[:value][:item]
-            price_keys = ["product_id"]
-            pair[:value][:item].each do |price| 
-              price[:item].each do |attr| 
-                price_keys.push(attr[:key])
-                price_values.push(attr[:value])
-              end
-            end
-            prices.push price_values.join(',')
-          else
-            price_values.push ""
-          end
-        else
-          values.push pair[:value][:item]
-        end
-      when NilClass
-        values.push ""
-      end 
-    end
-  rescue Savon::Error => error
-    mbklogerr(__FILE__, error.to_s)
-  end
-
-  x+=1
-  keys.delete_if {|k| k == "tier_price" }
-  mbk_db_create_table(export_db, "catalog_product", keys) 
-  mbk_db_insert_values(export_db, "catalog_product", keys, values) 
-  
-  products.push values.join(',')
-end
+mbk_magento_logout(client, session)
 
 
-File.open("price.csv", "w") do |f|
-  f.write "#{price_keys.join(',')}\n"
-  prices.each do |p|
-    f.write "#{p}\n"
-  end
-end
+
+
