@@ -7,62 +7,9 @@ require 'pidfile'
 require 'mbk_params.rb'
 require 'fileutils'
 require 'mail'
-require 'savon'
+require 'net/scp'
+require 'net/ssh'
 
-#_______________________________________________________________________________
-def mbk_magento_init(app)
-  Savon.configure do |config|
-    config.log = false             # disable logging
-    #config.log_level = :info      # changing the log level
-    #config.logger = Rails.logger  # using the Rails logger
-  end
-
-  client = Savon::Client.new do
-    wsdl.document = "#{MBK_MAGENTO_URL}"
-  end
-  client.http.auth.basic "#{MBK_MAGENTO_USER}", "#{MBK_MAGENTO_PASS}"
-  return client
-end
-#_______________________________________________________________________________
-def mbk_magento_login(app, client)
-  response = client.request :login do 
-    soap.body = { :username => "#{MBK_MAGENTO_SOAP_USER}", :apiKey => "#{MBK_MAGENTO_SOAP_APIKEY}" } 
-  end
-  if response.success? == false
-    mbklogerr(app, "login failed #{$!}")
-  end
-  session  = response[:login_response][:login_return]
-  return session
-end
-#_______________________________________________________________________________
-def mbk_magento_logout(client, session)
-  response = client.request :endSession do
-    soap.body = {:session => session}
-  end
-end
-#_______________________________________________________________________________
-def mbk_mage_get_list(client, session, tbl)
-  response = client.request :call do
-    soap.body = {:session => session, :method => "#{tbl}.list" }
-  end
-  arr = Array.new
-  if response.success?
-    response[:call_response][:call_return][:item].each do |item| 
-      h = Hash.new
-      item = item[:item]
-      item.each do |p|
-        case p[:value]
-        when Nori::StringWithAttributes
-          h[(p[:key])] = p[:value]
-        when NilClass
-          h[(p[:key])] = ""
-        end
-      end
-      arr.push(h) 
-    end
-  end
-  return arr
-end
 #_______________________________________________________________________________
 def mbk_volusion_login(app)
   $log.info "Starting Mechanize..."
@@ -154,7 +101,7 @@ end
 #_______________________________________________________________________________
 def mbk_db_create_table(db, tbl, cols)  
   s = "CREATE TABLE IF NOT EXISTS `#{db}`.`#{tbl}` ( "
-  cols.each() { |k| s << "`#{k}` text, " }
+  cols.each() { |k| s << "`#{k.strip}` text, " }
 	s << " `mbk_ready_to_import` BOOLEAN DEFAULT FALSE, `mbk_updated_at` TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, `mbk_created_at` DATETIME DEFAULT NULL) ENGINE=MyISAM;"
   begin
     $con.execute("#{s}")
@@ -165,7 +112,7 @@ end
 #_______________________________________________________________________________
 def mbk_db_insert_values(db, tbl, cols, vals) 
   s = "INSERT INTO `#{db}`.`#{tbl}` ("
-  cols.each() { |k| s << "`#{k}`,"  }
+  cols.each() { |k| s << "`#{k.strip}`,"  }
   s <<  "`mbk_ready_to_import`,`mbk_updated_at`,`mbk_created_at`) VALUES ("
   vals.push(false)
   vals.push("NOW()")

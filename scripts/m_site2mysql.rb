@@ -16,20 +16,34 @@ mbk_app_init(__FILE__)
 export_db = ARGV[0].to_s
 export_db = "mbk_grandriver_export_#{Time.now.strftime("%Y%m%d")}" if export_db.length < 1
 mbk_db_create_run(export_db)
+["customers", "products"].each() { |tbl|
+  o=""
+  Net::SSH.start(MBK_MAGENTO_HOST, MBK_MAGENTO_USER, :password => MBK_MAGENTO_PASS) do |ssh|
+    begin
+      ssh.exec!("cd mbksite; php -f amartinez_customimportexport.php -- -ce") if tbl == "customers"
+      ssh.exec!("cd mbksite; php -f amartinez_customimportexport.php -- -e")  if tbl == "products"
+    rescue
+      puts $!
+    end
+  end
 
-client  = mbk_magento_init(__FILE__)
-session = mbk_magento_login(__FILE__,client)
+  Net::SCP.start(MBK_MAGENTO_HOST, MBK_MAGENTO_USER, :password => MBK_MAGENTO_PASS) do |scp|
+    begin
+      scp.download! "#{MBK_MAGENTO_DATA_DIR}var/customimportexport/#{tbl}.csv", "#{MBK_DATA_DIR}/magento/export/#{tbl}.csv"
+    rescue
+      puts $!
+    end
+  end
 
-tbls = ["customer","catalog_category_attribute"]
-tbls.each() { |tbl|
-  mbk_mage_get_list(client, session, tbl).each() { |h|
-    mbk_db_create_table(export_db, tbl, h.keys) 
-    mbk_db_insert_values(export_db, tbl, h.keys, h.values) 
+  cols = File.open("#{MBK_DATA_DIR}/magento/export/#{tbl}.csv").readline.split(",")
+  cols.collect() { |x| x = x.strip }
+  mbk_db_create_table(export_db, tbl, cols) 
+  cnt = "0" 
+  File.open("#{MBK_DATA_DIR}/magento/export/#{tbl}.csv").each() { |r| 
+    next if cnt.next! == "1" 
+    vals = r.split(",")
+    vals.collect() { |x| x.gsub!(/\"/,"") }
+    mbk_db_insert_values(export_db, tbl, cols, vals) 
   }
 }
-
-mbk_magento_logout(client, session)
-
-
-
 
