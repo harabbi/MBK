@@ -143,11 +143,14 @@ def mbk_app_init(appname)
 end
 #_______________________________________________________________________________
 def mbk_send_mail(subject,body)
-  Mail.deliver do
-    from "error@mbk.net"
-    to "#{MBK_ADMIN_EMAIL}"
-    subject "#{subject}"
-    body "#{body}"
+  begin
+    Mail.deliver do
+      from "error@mbk.net"
+      to "#{MBK_ADMIN_EMAIL}"
+      subject "#{subject}"
+      body "#{body}"
+    end
+  rescue
+    mbklogerr(appname, "COULD NOT SEND EMAIL: #{$!}")    
   end
-
 end
