@@ -17,7 +17,6 @@ export_db = ARGV[0].to_s
 export_db = "mbk_grandriver_export_#{Time.now.strftime("%Y%m%d")}" if export_db.length < 1
 mbk_db_create_run(export_db)
 ["customers", "products"].each() { |tbl|
-  o=""
   Net::SSH.start(MBK_MAGENTO_HOST, MBK_MAGENTO_USER, :password => MBK_MAGENTO_PASS) do |ssh|
     begin
       ssh.exec!("cd mbksite; php -f amartinez_customimportexport.php -- -ce") if tbl == "customers"

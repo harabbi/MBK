@@ -17,8 +17,6 @@ export_db = ARGV[0].to_s
 export_db = "mbk_grandriver_export_#{Time.now.strftime("%Y%m%d")}" if export_db.length < 1
 
 ["customers", "products"].each() { |tbl|
-  o="" # what is this for? -jason
-
   #step1: build the csv file
   File.open("#{MBK_DATA_DIR}/magento/import/#{tbl}.csv", "w") do |of|
     #TODO
