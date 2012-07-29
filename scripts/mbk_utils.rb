@@ -151,6 +151,6 @@ def mbk_send_mail(subject,body)
       body "#{body}"
     end
   rescue
-    mbklogerr(appname, "COULD NOT SEND EMAIL: #{$!}")    
+    mbklogerr(__FILE__, "COULD NOT SEND EMAIL: #{$!}")    
   end
 end
