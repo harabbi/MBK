@@ -137,6 +137,7 @@ def mbk_app_init(appname)
     $pf = PidFile.new
     $uuid = ($pf.pid.to_s + Time.now.to_i.to_s).to_i
   rescue
+    $uuid = 0
     mbklogerr(appname, "ALREADY RUNNING")
   end
   mbkloginfo(appname, "started")
