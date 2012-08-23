@@ -17,7 +17,7 @@ mbk_app_init(__FILE__)
 $a = mbk_volusion_login(__FILE__)
 
 v_import_tbl = ARGV[0].to_s
-v_import_tbl = "mbk_volusion_export_#{Time.now.strftime("%Y%m%d")}" if v_import_tbl.length < 1
+v_import_tbl = "mbk_site_export_#{Time.now.strftime("%Y%m%d")}" if v_import_tbl.length < 1
 mbk_db_create_run(v_import_tbl)
 
 csvdir = "#{Dir.pwd}/#{MBK_DATA_DIR}/volusion/import/csv"

@@ -14,7 +14,7 @@ end
 mbk_app_init(__FILE__)
 
 export_db = ARGV[0].to_s
-export_db = "mbk_grandriver_export_#{Time.now.strftime("%Y%m%d")}" if export_db.length < 1
+export_db = "mbk_site_export_#{Time.now.strftime("%Y%m%d")}" if export_db.length < 1
 mbk_db_create_run(export_db)
 ["customers", "products"].each() { |tbl|
   Net::SSH.start(MBK_MAGENTO_HOST, MBK_MAGENTO_USER, :password => MBK_MAGENTO_PASS) do |ssh|
@@ -36,13 +36,13 @@ mbk_db_create_run(export_db)
 
   cols = File.open("#{MBK_DATA_DIR}/magento/export/#{tbl}.csv").readline.split(",")
   cols.collect() { |x| x = x.strip }
-  mbk_db_create_table(export_db, tbl, cols) 
+  mbk_db_create_table(export_db, "m_#{tbl}", cols) 
   cnt = "0" 
   File.open("#{MBK_DATA_DIR}/magento/export/#{tbl}.csv").each() { |r| 
     next if cnt.next! == "1" 
     vals = r.split(",")
     vals.collect() { |x| x.gsub!(/\"/,"") }
-    mbk_db_insert_values(export_db, tbl, cols, vals) 
+    mbk_db_insert_values(export_db, "m_#{tbl}", cols, vals) 
   }
 }
 

@@ -1,4 +1,5 @@
-create table if not exists vm_merged (
+create database if not exists vm_merged;
+create table if not exists vm_merged_products (
 `v_productprice`		double,
 `v_listprice`			double,
 `v_categoryids`			bigint,
@@ -30,7 +31,9 @@ create table if not exists vm_merged (
 `m_qty`	                bigint,
 `m_meta_title`	        text,
 `m_meta_description`	text,
-`mbk_ready_to_import` tinyint(1) DEFAULT '0',
-`mbk_updated_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE CURRENT_TIMESTAMP,
-`mbk_created_at` datetime DEFAULT NULL
+`mbk_import_update`     tinyint(1) DEFAULT '0',
+`mbk_import_new`        tinyint(1) DEFAULT '0',
+`mbk_ready_to_import`   tinyint(1) DEFAULT '0',
+`mbk_updated_at`        timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE CURRENT_TIMESTAMP,
+`mbk_created_at`        datetime DEFAULT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;

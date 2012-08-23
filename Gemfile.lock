@@ -19,6 +19,7 @@ GEM
       nokogiri (>= 1.4.0)
     arel (3.0.2)
     builder (3.0.0)
+    curb (0.8.1)
     domain_name (0.5.3)
       unf (~> 0.0.3)
     gyoku (0.4.6)
@@ -79,6 +80,7 @@ PLATFORMS
 DEPENDENCIES
   activerecord
   activerecord-fast-import2
+  curb
   mail
   mechanize
   mysql2
