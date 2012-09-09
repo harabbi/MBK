@@ -22,7 +22,7 @@ mbk_create_dir(coldir)
 
 $a.get('https://www.modeltrainstuff.com/admin/db_export.asp')
 
-columns = $a.page.search('table tbody tr td span table')
+columns = $a.page.search('#export_columns_row span table')
 columns.each{|c| columns.delete(c) if !c.nil? and (c.text.include? "Check All")}
 
 IO.readlines("#{Dir.pwd}/tablesToDownload").each do |table_name|
