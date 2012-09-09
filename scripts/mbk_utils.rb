@@ -9,7 +9,6 @@ require 'fileutils'
 require 'mail'
 require 'net/scp'
 require 'net/ssh'
-
 #_______________________________________________________________________________
 def mbk_volusion_login(app)
   $log.info "Starting Mechanize..."
