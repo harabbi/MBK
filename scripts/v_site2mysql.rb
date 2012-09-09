@@ -94,10 +94,10 @@ IO.readlines("#{Dir.pwd}/tablesToDownload").each do |table_name|
 
 	mbkloginfo(__FILE__, "   Downloading...")
   begin 
-    $a.download($a.page.link_with(:text => "Click here to download your file").uri,
+    $a.download($a.page.link_with(:text => "Download").uri,
               File.open("#{outdir}/#{xml_document}", "w"))
     FileUtils.mv("#{outdir}/#{xml_document}", "#{xmldir}/#{xml_document}")
-    mbkloginfo(__FILE__, "Done with #{table_name}!")
+    mbkloginfo(__FILE__, "Downloaded #{xml_document}!")
   rescue
     mbklogerr(__FILE__, "#{xml_document} did not download!")
   end

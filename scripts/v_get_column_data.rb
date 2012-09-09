@@ -38,13 +38,13 @@ IO.readlines("#{Dir.pwd}/tablesToDownload").each do |table_name|
         n = "`#{column}` text,\n"
 
       else
-        column.gsub!(/^ /, "")
         column.downcase!
+        column.gsub!(/^ /, "")
         column.gsub!("* ", "")
 
         type.downcase!
-        type.gsub!("* ", "")
-        type.gsub!(" : ", "(") if type.include?(":")
+        type.gsub!(/\).*$/, "") # strip the ')' and anything else off the end
+        type.gsub!(" : ", "(").gsub!(/$/, ")") if type.include?(":") # a ':' indicates string length, replace the : and wrap the number in '( )'
         type.gsub!("text", "varchar")
         type.gsub!("memo", "text")
         type.gsub!("long", "bigint")
