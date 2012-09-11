@@ -1,0 +1,43 @@
+%h1
+  ="You are on page #{(@page).to_s}. Scroll down for customers."
+%h2
+  =link_to "Prev", "/#{(@page-1).to_s}" unless @page == 1
+  =link_to "Next", "/#{(@page+1).to_s}"
+
+%table
+  -Product.attribute_names.each do |attribute_name|
+    %th
+      Number
+    %th
+      =attribute_name.camelize
+  -if @all_products.empty?
+    %tr
+      %td{:colspan => 10}
+        ="No products..."
+  -else
+    -@all_products.each_with_index do |product, index|
+      %tr
+        %td
+          =((100*(@page-1))+(index+1)).to_s
+        -Product.attribute_names.each do |attribute_name|
+          %td
+            =product.send(attribute_name.to_sym)
+        
+%table
+  -Customer.attribute_names.each do |attribute_name|
+    %th
+      Number
+    %th
+      =attribute_name.camelize
+  -if @all_customers.empty?
+    %tr
+      %td{:colspan => 10}
+        ="No customers..."
+  -else
+    -@all_customers.each_with_index do |customer, index|
+      %tr
+        %td
+          =((100*(@page-1))+(index+1)).to_s
+        -Customer.attribute_names.each do |attribute_name|
+          %td
+            =customer.send(attribute_name.to_sym)

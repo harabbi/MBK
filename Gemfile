@@ -11,3 +11,4 @@ gem 'savon'
 gem "net-ssh", "~> 2.5.1"
 gem 'net-scp'
 gem 'curb'
+gem 'rails'
