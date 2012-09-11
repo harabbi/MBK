@@ -2,6 +2,7 @@
   ="You are on page #{(@page).to_s}. Scroll down for customers."
 %h2
   =link_to "Prev", "/#{(@page-1).to_s}" unless @page == 1
+  =link_to "Download Excel File", url_for(:format => 'xls')
   =link_to "Next", "/#{(@page+1).to_s}"
 
 %table
@@ -10,7 +11,7 @@
       Number
     %th
       =attribute_name.camelize
-  -if @all_products.empty?
+  -if @all_products.nil?
     %tr
       %td{:colspan => 10}
         ="No products..."
@@ -29,7 +30,7 @@
       Number
     %th
       =attribute_name.camelize
-  -if @all_customers.empty?
+  -if @all_customers.nil?
     %tr
       %td{:colspan => 10}
         ="No customers..."
