@@ -78,7 +78,7 @@ IO.readlines("#{Dir.pwd}/tablesToDownload").each do |table_name|
     form.field_with(:name => "Table").value = table_name
     form.checkbox_with(:name => "disregard", :value => table_name).check
     form.checkboxes.each do |c|
-      c.check if c.value.split(".").first == table_name.strip
+      c.check if c.value.split(".").first == table_name.strip and c.value != "Products_Joined.ProductDescription"
     end
     form.field_with(:name => "FileType").value="XML"
     mbkloginfo(__FILE__, "   Compiling... (try #{try})")
