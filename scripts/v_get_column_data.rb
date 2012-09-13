@@ -32,6 +32,9 @@ IO.readlines("#{Dir.pwd}/tablesToDownload").each do |table_name|
 		unless x.text.include? "Check All"
 		  column, type = x.text.split(" (") || x.text
 
+      #TODO Rip this OUT!!!
+      next if column == "ProductDescription"
+
       if type.nil?
         # virtual column
         column.gsub!("*", "")
