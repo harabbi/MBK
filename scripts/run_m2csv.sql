@@ -185,7 +185,11 @@ use_config_manage_stock,
 use_config_qty_increments,
 qty_increments,
 use_config_enable_qty_increments,
-enable_qty_increments
+enable_qty_increments,
+_tier_price_website,
+_tier_price_customer_group,
+_tier_price_qty,
+_tier_price_price
 FROM `magento`.`m_products` WHERE `mbk_import_new`=1 INTO OUTFILE ',
 "'",'/tmp/products_new_',round(now() + 0,0), '.csv',"'",' FIELDS TERMINATED BY \',\' OPTIONALLY ENCLOSED BY \'"\' LINES TERMINATED BY \'\\n\'') ; 
 PREPARE stmt2 FROM @v_new; 
