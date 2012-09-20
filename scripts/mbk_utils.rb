@@ -49,7 +49,7 @@ def mbklogdebug(app,msg)
 end
 #_______________________________________________________________________________
 def mbklog(app,msg,type)
-  puts msg
+  #puts msg
   init_mbk_mysql_logger unless $con  
   $con.execute("insert into mbk.log values (NOW(),'#{app}','#{ENV['USER']}',#{Process.pid},'#{type}',#{$uuid},0,#{$con.quote($con.quote_string(msg))})")  
 end
