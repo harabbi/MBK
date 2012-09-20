@@ -1,44 +1,66 @@
-%h1
-  ="You are on page #{(@page).to_s}. Scroll down for customers."
-%h2
-  =link_to "Prev", "/#{(@page-1).to_s}" unless @page == 1
-  =link_to "Download Excel File", url_for(:format => 'xls')
-  =link_to "Next", "/#{(@page+1).to_s}"
+#header
+  %h1
+    ="You are on page #{(@page).to_s}. Scroll down for customers."
+  %h2
+    =link_to "Prev", "/#{(@page-1).to_s}" unless @page == 1
+    =link_to "Download Excel File", url_for(:format => 'xls')
+    =link_to "Next", "/#{(@page+1).to_s}"
 
-%table
-  -Product.attribute_names.each do |attribute_name|
-    %th
-      Number
-    %th
-      =attribute_name.camelize
-  -if @all_products.nil?
-    %tr
-      %td{:colspan => 10}
-        ="No products..."
-  -else
-    -@all_products.each_with_index do |product, index|
-      %tr
-        %td
-          =((100*(@page-1))+(index+1)).to_s
-        -Product.attribute_names.each do |attribute_name|
-          %td
-            =product.send(attribute_name.to_sym)
-        
-%table
-  -Customer.attribute_names.each do |attribute_name|
-    %th
-      Number
-    %th
-      =attribute_name.camelize
-  -if @all_customers.nil?
-    %tr
-      %td{:colspan => 10}
-        ="No customers..."
-  -else
-    -@all_customers.each_with_index do |customer, index|
-      %tr
-        %td
-          =((100*(@page-1))+(index+1)).to_s
-        -Customer.attribute_names.each do |attribute_name|
-          %td
-            =customer.send(attribute_name.to_sym)
+#preview_box
+  #products_table
+    .preview_table
+      .preview_table_row
+        -Product.xls_attributes.each do |attribute_name|
+          .preview_table_header
+            =attribute_name.camelize
+
+      .preview_table_row
+        -Product.xls_attributes.each do |attribute_name|
+          .preview_table_cell
+            -if Product.short_attributes.include? attribute_name
+              =text_field_tag attribute_name + "_min", nil, :size => 10
+            -elsif Product.long_attributes.include? attribute_name
+              =text_field_tag attribute_name + "_min", nil, :size => 100
+            -else
+              =text_field_tag attribute_name + "_min"
+
+      .preview_table_row
+        -Product.xls_attributes.each do |attribute_name|
+          .preview_table_cell
+            -if Product.short_attributes.include? attribute_name
+              =text_field_tag attribute_name + "_max", nil, :size => 10
+            -elsif Product.long_attributes.include? attribute_name
+              =text_field_tag attribute_name + "_max", nil, :size => 100
+            -else
+              =text_field_tag attribute_name + "_max"
+
+      -if @all_products.nil?
+        .preview_table_row
+          .preview_table_cell{:colspan => 10}
+            ="No products..."
+      -else
+        -@all_products.each_with_index do |product, index|
+          .preview_table_row
+            -Product.xls_attributes.each do |attribute_name|
+              -if Product.long_attributes.include? attribute_name
+                .preview_table_cell{:style => "white-space: normal;"}
+                  =product.send(attribute_name.to_sym)
+              -else
+                .preview_table_cell
+                  =product.send(attribute_name.to_sym)
+
+  #customers_table
+    .preview_table
+      -Customer.xls_attributes.each do |attribute_name|
+        .preview_table_header
+          =attribute_name.camelize
+      -if @all_customers.nil?
+        .preview_table_row
+          .preview_table_cell{:colspan => 10}
+            ="No customers..."
+      -else
+        -@all_customers.each_with_index do |customer, index|
+          .preview_table_row
+            -Customer.xls_attributes.each do |attribute_name|
+              .preview_table_cell
+                =customer.send(attribute_name.to_sym)
