@@ -1,0 +1,18 @@
+-unless @products.empty?
+  ="Your search returned #{@products.count} results."
+  =form_for @product_search, :url => search_download_path do |f|
+    -@product_search.attributes.each do |key, value|
+      =hidden_field_tag "search_id", @product_search.id if @product_search.id
+      =hidden_field_tag "product_search[#{key}]", value unless value.blank? or @product_search.id
+    =f.submit "Download XLS"
+  #product_search_table.search_table
+    -Product.xls_attributes.each do |attr|
+      .search_table_header
+        =attr.gsub("v_", "").camelize
+    -@products.each do |product|
+      .search_table_row
+        -Product.xls_attributes.each do |attr|
+          .search_table_cell
+            =product.send(attr)
+-else
+  ="Your search returned no results..."

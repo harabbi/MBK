@@ -11,42 +11,55 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 0) do
+ActiveRecord::Schema.define(:version => 20120930033132) do
+
+  create_table "customer_searches", :force => true do |t|
+    t.text "search_name"
+    t.text "firstname"
+    t.text "lastname"
+    t.text "billingaddress1"
+    t.text "billingaddress2"
+    t.text "city"
+    t.text "state"
+    t.text "postalcode"
+    t.text "country"
+    t.text "phonenumber"
+    t.text "faxnumber"
+    t.text "emailaddress"
+  end
+
+  create_table "product_searches", :force => true do |t|
+    t.text     "search_name"
+    t.float    "productprice_min"
+    t.float    "listprice_min"
+    t.integer  "stockstatus_min"
+    t.integer  "stocklowqtyalarm_min"
+    t.integer  "maxqty_min"
+    t.float    "saleprice_min"
+    t.float    "productweight_min"
+    t.float    "productprice_max"
+    t.float    "listprice_max"
+    t.integer  "stockstatus_max"
+    t.integer  "stocklowqtyalarm_max"
+    t.integer  "maxqty_max"
+    t.float    "saleprice_max"
+    t.float    "productweight_max"
+    t.text     "productcode"
+    t.text     "productname"
+    t.integer  "categoryids"
+    t.text     "productmanufacturer"
+    t.text     "productdescription"
+    t.text     "productdescriptionshort"
+    t.text     "productfeatures"
+    t.text     "metatag_title"
+    t.text     "metatag_description"
+    t.boolean  "hideproduct"
+    t.datetime "created_at",              :null => false
+    t.datetime "updated_at",              :null => false
+  end
 
   create_table "vm_merged_customers", :id => false, :force => true do |t|
-    t.text      "v_password"
-    t.text      "v_firstname"
-    t.text      "v_lastname"
-    t.text      "v_companyname"
-    t.text      "v_billingaddress1"
-    t.text      "v_billingaddress2"
-    t.text      "v_city"
-    t.text      "v_state"
-    t.text      "v_postalcode"
-    t.text      "v_country"
-    t.text      "v_phonenumber"
-    t.text      "v_faxnumber"
-    t.text      "v_emailaddress"
-    t.text      "m_email"
-    t.text      "m_firstname"
-    t.text      "m_lastname"
-    t.text      "m_password_hash"
-    t.text      "m__address_city"
-    t.text      "m__address_company"
-    t.text      "m__address_country_id"
-    t.text      "m__address_fax"
-    t.text      "m__address_firstname"
-    t.text      "m__address_lastname"
-    t.text      "m__address_postcode"
-    t.text      "m__address_region"
-    t.text      "m__address_street"
-    t.text      "m__address_suffix"
-    t.text      "m__address_telephone"
-    t.boolean   "mbk_import_update",     :default => false
-    t.boolean   "mbk_import_new",        :default => false
-    t.boolean   "mbk_ready_to_import",   :default => false
-    t.timestamp "mbk_updated_at",                           :null => false
-    t.datetime  "mbk_created_at"
+    t.string "name"
   end
 
   create_table "vm_merged_products", :id => false, :force => true do |t|
@@ -68,6 +81,8 @@ ActiveRecord::Schema.define(:version => 0) do
     t.text      "v_hideproduct"
     t.integer   "v_stocklowqtyalarm",        :limit => 8
     t.integer   "v_maxqty",                  :limit => 8
+    t.text      "v_howtogetsaleprice"
+    t.float     "v_discountedprice_level1"
     t.float     "m_price"
     t.float     "m_mbk_retail_price"
     t.text      "m_category_ids"
@@ -84,9 +99,11 @@ ActiveRecord::Schema.define(:version => 0) do
     t.integer   "m_qty",                     :limit => 8
     t.text      "m_meta_title"
     t.text      "m_meta_description"
-    t.text      "m_status"
+    t.integer   "m_status"
     t.integer   "m_notify_stock_qty",        :limit => 8
     t.integer   "m_max_sale_qty",            :limit => 8
+    t.float     "m_mbk_map_price"
+    t.float     "m__tier_price_price"
     t.boolean   "mbk_import_update",                      :default => false
     t.boolean   "mbk_import_new",                         :default => false
     t.boolean   "mbk_ready_to_import",                    :default => false

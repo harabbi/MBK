@@ -1,16 +1,8 @@
 /*
- * This is a manifest file that'll be compiled into application.css, which will include all the files
- * listed below.
- *
- * Any CSS and SCSS file within this directory, lib/assets/stylesheets, vendor/assets/stylesheets,
- * or vendor/assets/stylesheets of plugins, if any, can be referenced here using a relative path.
- *
- * You're free to add application-wide styles to this file and they'll appear at the top of the
- * compiled file, but it's generally better to create a new file per style scope.
- *
  *= require_self
  *= require_tree .
  */
+
 #header {
   margin: 10px;
 }
@@ -20,18 +12,28 @@
 #preview_box {
   margin: 10px;
 }
-.preview_table {
+.preview_table, .search_table {
   display: table;
-  border: 1px solid #000;
 }
-.preview_table_header {
+.preview_table_header, .search_table_header {
+  border: 1px solid #000;
+  border-top: 2px solid #000;
   display: table-cell;
   font-weight: bold;
+  padding: 5px;
 }
-.preview_table_row {
+.preview_table_row, .search_table_row {
   display: table-row;
 }
-.preview_table_cell {
+.preview_table_cell, .search_table_cell, .search_table_first_cell {
+  border: 1px solid #000;
   display: table-cell;
   white-space: nowrap;
+}
+.search_table_first_cell {
+  border-left: 2px solid #000;
+  padding: 5px; 
+}
+.search_table_cell input {
+  border: 0;
 }

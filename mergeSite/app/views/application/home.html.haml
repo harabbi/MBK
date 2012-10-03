@@ -1,66 +1,59 @@
-#header
-  %h1
-    ="You are on page #{(@page).to_s}. Scroll down for customers."
-  %h2
-    =link_to "Prev", "/#{(@page-1).to_s}" unless @page == 1
-    =link_to "Download Excel File", url_for(:format => 'xls')
-    =link_to "Next", "/#{(@page+1).to_s}"
+%h1
+  ModelTrainStuff.com Inventory and Customer Import/Export Tool
 
-#preview_box
-  #products_table
-    .preview_table
-      .preview_table_row
-        -Product.xls_attributes.each do |attribute_name|
-          .preview_table_header
-            =attribute_name.camelize
+%h2
+  Product/Customer Import
+=form_tag do
+  =file_field_tag 'file', :size => 60
+  =submit_tag "Upload"
 
-      .preview_table_row
-        -Product.xls_attributes.each do |attribute_name|
-          .preview_table_cell
-            -if Product.short_attributes.include? attribute_name
-              =text_field_tag attribute_name + "_min", nil, :size => 10
-            -elsif Product.long_attributes.include? attribute_name
-              =text_field_tag attribute_name + "_min", nil, :size => 100
-            -else
-              =text_field_tag attribute_name + "_min"
+%h2
+  Products Export
 
-      .preview_table_row
-        -Product.xls_attributes.each do |attribute_name|
-          .preview_table_cell
-            -if Product.short_attributes.include? attribute_name
-              =text_field_tag attribute_name + "_max", nil, :size => 10
-            -elsif Product.long_attributes.include? attribute_name
-              =text_field_tag attribute_name + "_max", nil, :size => 100
-            -else
-              =text_field_tag attribute_name + "_max"
+=form_for @product_search, :url => "/search" do |f|
+  ="Pick a saved search or "
+  =select "search", "search_id", ProductSearch.all.collect{|s| [ s.name, s.id ] }, { :include_blank => "enter new search criteria" }
 
-      -if @all_products.nil?
-        .preview_table_row
-          .preview_table_cell{:colspan => 10}
-            ="No products..."
-      -else
-        -@all_products.each_with_index do |product, index|
-          .preview_table_row
-            -Product.xls_attributes.each do |attribute_name|
-              -if Product.long_attributes.include? attribute_name
-                .preview_table_cell{:style => "white-space: normal;"}
-                  =product.send(attribute_name.to_sym)
-              -else
-                .preview_table_cell
-                  =product.send(attribute_name.to_sym)
+  =submit_tag "go!"
 
-  #customers_table
-    .preview_table
-      -Customer.xls_attributes.each do |attribute_name|
-        .preview_table_header
-          =attribute_name.camelize
-      -if @all_customers.nil?
-        .preview_table_row
-          .preview_table_cell{:colspan => 10}
-            ="No customers..."
-      -else
-        -@all_customers.each_with_index do |customer, index|
-          .preview_table_row
-            -Customer.xls_attributes.each do |attribute_name|
-              .preview_table_cell
-                =customer.send(attribute_name.to_sym)
+  %p
+    Enter Min and/or Max Values
+  #product_search_table.search_table
+    .search_table_row
+      .search_table_header{ :style => "border-top: 0; border-left: 0;" }
+        =" "
+      -ProductSearch.ranged_searches.each do |attribute_name|
+        .search_table_header
+          =attribute_name.gsub("product", "").camelize
+    .search_table_row
+      .search_table_first_cell
+        Min
+      -ProductSearch.ranged_searches.each do |attribute_name|
+        .search_table_cell
+          =f.text_field attribute_name + "_min", :size => 10
+    .search_table_row
+      .search_table_first_cell
+        Max 
+      -ProductSearch.ranged_searches.each do |attribute_name|
+        .search_table_cell
+          =f.text_field attribute_name + "_max", :size => 10
+
+  %p
+    Enter search strings.
+  #product_search_table.search_table
+    .search_table_row
+      -ProductSearch.contains_searches.each do |attribute_name|
+        .search_table_header
+          =attribute_name.gsub("product", "").camelize
+    .search_table_row
+      -ProductSearch.contains_searches.each do |attribute_name|
+        .search_table_cell
+          =f.text_field attribute_name, :size => 15
+  %p
+    Enter a name for the search if you'd like to save this search:  
+    =text_field_tag "new_search_name"
+%h2
+  Customers Export
+%h3
+  Pick a saved search from the drop down or enter new search criteria.
+

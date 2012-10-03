@@ -1,4 +1,5 @@
 MergeSite::Application.routes.draw do
-  match ':page', :to => 'application#home'
+  match "/search/download" => "application#download"
+  match "/search/" => "application#search"
   root :to => 'application#home'
 end
