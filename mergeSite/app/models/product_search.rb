@@ -5,9 +5,7 @@ class ProductSearch < ActiveRecord::Base
       "listprice",
       "stockstatus",
       "stocklowqtyalarm",
-      "maxqty",
-      "saleprice",
-      "productweight"
+      "saleprice"
     ]
   end 
 
@@ -17,11 +15,7 @@ class ProductSearch < ActiveRecord::Base
       "productname",
       "categoryids",
       "productmanufacturer",
-      "productdescription",
-      "productdescriptionshort",
-      "productfeatures",
-      "metatag_title",
-      "metatag_description",
+      "yahoo_category"
     ]
   end 
 
@@ -35,7 +29,7 @@ class ProductSearch < ActiveRecord::Base
     @results = Product.all
     self.class.contains_searches.each do |attr_string|
       unless self.send(attr_string).blank?
-        @results = @results.select{|product| product.send("v_" + attr_string).include? self.attr_sym  }
+        @results = @results.select{|product| product.send("v_" + attr_string).include? self.send(attr_string) }
       end
     end
     self.class.ranged_searches.each do |attr_string|

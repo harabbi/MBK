@@ -30,32 +30,24 @@ ActiveRecord::Schema.define(:version => 20120930033132) do
 
   create_table "product_searches", :force => true do |t|
     t.text     "search_name"
-    t.float    "productprice_min"
-    t.float    "listprice_min"
-    t.integer  "stockstatus_min"
-    t.integer  "stocklowqtyalarm_min"
-    t.integer  "maxqty_min"
-    t.float    "saleprice_min"
-    t.float    "productweight_min"
-    t.float    "productprice_max"
-    t.float    "listprice_max"
-    t.integer  "stockstatus_max"
-    t.integer  "stocklowqtyalarm_max"
-    t.integer  "maxqty_max"
-    t.float    "saleprice_max"
-    t.float    "productweight_max"
     t.text     "productcode"
     t.text     "productname"
     t.integer  "categoryids"
     t.text     "productmanufacturer"
-    t.text     "productdescription"
-    t.text     "productdescriptionshort"
-    t.text     "productfeatures"
-    t.text     "metatag_title"
-    t.text     "metatag_description"
+    t.text     "yahoo_category"
+    t.float    "productprice_max"
+    t.float    "productprice_min"
+    t.float    "listprice_max"
+    t.float    "listprice_min"
+    t.integer  "stockstatus_max"
+    t.integer  "stockstatus_min"
+    t.integer  "stocklowqtyalarm_max"
+    t.integer  "stocklowqtyalarm_min"
+    t.float    "saleprice_max"
+    t.float    "saleprice_min"
     t.boolean  "hideproduct"
-    t.datetime "created_at",              :null => false
-    t.datetime "updated_at",              :null => false
+    t.datetime "created_at",           :null => false
+    t.datetime "updated_at",           :null => false
   end
 
   create_table "vm_merged_customers", :id => false, :force => true do |t|
@@ -65,7 +57,8 @@ ActiveRecord::Schema.define(:version => 20120930033132) do
   create_table "vm_merged_products", :id => false, :force => true do |t|
     t.float     "v_productprice"
     t.float     "v_listprice"
-    t.integer   "v_categoryids",             :limit => 8
+    t.integer   "v_categoryid",              :limit => 8
+    t.text      "v_categoryids"
     t.text      "v_productcode"
     t.text      "v_productname"
     t.float     "v_saleprice"
@@ -83,6 +76,9 @@ ActiveRecord::Schema.define(:version => 20120930033132) do
     t.integer   "v_maxqty",                  :limit => 8
     t.text      "v_howtogetsaleprice"
     t.float     "v_discountedprice_level1"
+    t.float     "v_discountedprice_level3"
+    t.text      "v_yahoo_category"
+    t.datetime  "v_displaybegindate"
     t.float     "m_price"
     t.float     "m_mbk_retail_price"
     t.text      "m_category_ids"

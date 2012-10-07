@@ -1,18 +1,52 @@
 -unless @products.empty?
-  ="Your search returned #{@products.count} results."
-  =form_for @product_search, :url => search_download_path do |f|
+  =form_for @product_search, :url => download_path do |f|
     -@product_search.attributes.each do |key, value|
       =hidden_field_tag "search_id", @product_search.id if @product_search.id
       =hidden_field_tag "product_search[#{key}]", value unless value.blank? or @product_search.id
-    =f.submit "Download XLS"
-  #product_search_table.search_table
-    -Product.xls_attributes.each do |attr|
-      .search_table_header
-        =attr.gsub("v_", "").camelize
-    -@products.each do |product|
-      .search_table_row
-        -Product.xls_attributes.each do |attr|
-          .search_table_cell
-            =product.send(attr)
+    %p
+      ="Your search returned #{@products.count} results."
+    %p
+      =f.submit "Download XLS"
+      ="or click "
+      =link_to "here", root_path
+      =" to return to the Home page."
+
+  %table.preview_search_table
+    %thead
+      %tr.preview_table_row
+        %th.preview_table_cell
+          ="Image"
+        -Product.preview_attributes.each do |attr|
+          %th.preview_table_cell
+            -if attr == "v_stocklowqtyalarm"
+              ="QtyAlarm"
+            -elsif attr == "v_hideproduct"
+              ="Hidden?"
+            -elsif attr == "v_stockstatus"
+              ="Qty"
+            -else
+              =attr.gsub("discounted","").gsub("v_","").camelize
+    %tbody
+      -@products.each do |product|
+        %tr.preview_table_row
+          %td.preview_table_cell{:style => "width: 100px;"}
+            =link_to image_tag("http://a248.e.akamai.net/origin-cdn.volusion.com/ztna9.tft5b/v/vspfiles/photos/#{product.v_productcode}-2.jpg", :width=>"100px"), "http://www.modeltrainstuff.com/ProductDetails.asp?ProductCode=#{product.v_productcode}"
+          -Product.preview_attributes.each do |attr|
+            %td.preview_table_cell{:class => "#{'long_cell' if Product.long_attributes.include? attr}" +      |
+              "#{'short_cell' if Product.short_attributes.include? attr}"}                                   |
+              -if product.send(attr).is_a?(Float)
+                -unless product.send(attr) == 0
+                  ="$%.2f" % product.send(attr)
+                -else
+                  =""
+              -elsif product.send(attr).is_a?(Fixnum)
+                -unless product.send(attr) == 0
+                  =product.send(attr)
+                -else
+                  =""
+              -elsif attr == "v_categoryids"
+                =product.send(attr).gsub(",", ", ")
+              -else
+                =product.send(attr)
 -else
   ="Your search returned no results..."

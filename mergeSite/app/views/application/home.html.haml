@@ -1,59 +1,90 @@
-%h1
-  ModelTrainStuff.com Inventory and Customer Import/Export Tool
+#header
+  %h1{:style => "text-align: center;"}
+    ModelTrainStuff.com Inventory and Customer Import/Export Tool
 
-%h2
-  Product/Customer Import
-=form_tag do
-  =file_field_tag 'file', :size => 60
-  =submit_tag "Upload"
+#search_box
+  %table.search_table
+    %tr
+      %td{:style => "border: 2px solid #000;"}
+        %h2{:style => "padding-left: 10px;"}
+          Product/Customer Import
+        =form_tag upload_path, :multipart => true do
+          %p
+            =file_field_tag 'file', :size => 60
+            =submit_tag "Upload"
 
-%h2
-  Products Export
+    %tr
+      %td{:style => "border: 2px solid #000; padding-bottom: 20px;"}
+        %h2{:style => "padding-left: 10px;"}
+          Products Export
 
-=form_for @product_search, :url => "/search" do |f|
-  ="Pick a saved search or "
-  =select "search", "search_id", ProductSearch.all.collect{|s| [ s.name, s.id ] }, { :include_blank => "enter new search criteria" }
+        =form_for @product_search, :url => "/search" do |f|
+          %p
+            ="Pick a saved search or "
+            =select "search", "search_id", ProductSearch.all.collect{|s|                                |
+              [ s.search_name, s.id ] }, { :include_blank => "enter new search criteria" }              |
+            =submit_tag "go!"
+          %p
+            Enter a name for the search if you'd like to save this search:  
+            =text_field_tag "new_search_name"
 
-  =submit_tag "go!"
+          #product_search_table.search_table
+            .search_table_row
+              .search_table_header
+                =""
+              -ProductSearch.contains_searches.each do |attribute_name|
+                .search_table_header
+                  =attribute_name.gsub("product", "").camelize
+            .search_table_row
+              .search_table_first_cell
+                ="Phrase"
+              -ProductSearch.contains_searches.each do |attribute_name|
+                .search_table_cell{ :style => "width: 60px;" }
+                  =f.text_field attribute_name, :size => 15
 
-  %p
-    Enter Min and/or Max Values
-  #product_search_table.search_table
-    .search_table_row
-      .search_table_header{ :style => "border-top: 0; border-left: 0;" }
-        =" "
-      -ProductSearch.ranged_searches.each do |attribute_name|
-        .search_table_header
-          =attribute_name.gsub("product", "").camelize
-    .search_table_row
-      .search_table_first_cell
-        Min
-      -ProductSearch.ranged_searches.each do |attribute_name|
-        .search_table_cell
-          =f.text_field attribute_name + "_min", :size => 10
-    .search_table_row
-      .search_table_first_cell
-        Max 
-      -ProductSearch.ranged_searches.each do |attribute_name|
-        .search_table_cell
-          =f.text_field attribute_name + "_max", :size => 10
+          #product_search_table.search_table
+            .attribute_cell 
+              .search_table_row
+                .attribute_cell
+                  ="Attribute" 
+              .search_table_row
+                .attribute_cell
+                  ="Value" 
+            -5.times.each do |num|
+              .attribute_cell 
+                .search_table_row
+                  .attribute_cell
+                    =select_tag "AttrType#{num}", options_for_select(['Color', 'CarType'])
+                .search_table_row
+                  .attribute_cell
+                    =text_field_tag "AttrValue#{num}", nil, :size => 11
 
-  %p
-    Enter search strings.
-  #product_search_table.search_table
-    .search_table_row
-      -ProductSearch.contains_searches.each do |attribute_name|
-        .search_table_header
-          =attribute_name.gsub("product", "").camelize
-    .search_table_row
-      -ProductSearch.contains_searches.each do |attribute_name|
-        .search_table_cell
-          =f.text_field attribute_name, :size => 15
-  %p
-    Enter a name for the search if you'd like to save this search:  
-    =text_field_tag "new_search_name"
-%h2
-  Customers Export
-%h3
-  Pick a saved search from the drop down or enter new search criteria.
-
+          #product_search_table.search_table
+            .search_table_row
+              .search_table_header
+                =" "
+              -ProductSearch.ranged_searches.each do |attribute_name|
+                .search_table_header
+                  -if attribute_name == "stocklowqtyalarm"
+                    ="QtyAlarm"
+                  -else
+                    =attribute_name.gsub("product", "").camelize
+            .search_table_row
+              .search_table_first_cell
+                Min
+              -ProductSearch.ranged_searches.each do |attribute_name|
+                .search_table_cell{ :style => "width: 65px;" }
+                  =f.text_field attribute_name + "_min", :size => 11
+            .search_table_row
+              .search_table_first_cell
+                Max 
+              -ProductSearch.ranged_searches.each do |attribute_name|
+                .search_table_cell{ :style => "width: 65px;" }
+                  =f.text_field attribute_name + "_max", :size => 11
+              
+    %tr
+      %td{:style => "border: 2px solid #000;"}
+        %h2{:style => "padding-left: 10px;"}
+          Customers Export
+        %p
+          ="So.... about that... You're gonna wanna come back some other time... maybe more like never?"
