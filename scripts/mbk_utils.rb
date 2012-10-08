@@ -14,7 +14,7 @@ def mbk_volusion_login(app)
   $log.info "Starting Mechanize..."
   begin
     $a = Mechanize.new
-    $a.keep_alive = false
+    $a.keep_alive = true
     $a.get("#{MBK_VOLUSION_URL}/admin") do |page|
   	  page.form_with(:name => 'loginform') do |f|
   	    f.email = MBK_VOLUSION_USER
@@ -49,7 +49,7 @@ def mbklogdebug(app,msg)
 end
 #_______________________________________________________________________________
 def mbklog(app,msg,type)
-  #puts msg
+  puts msg
   init_mbk_mysql_logger unless $con  
   $con.execute("insert into mbk.log values (NOW(),'#{app}','#{ENV['USER']}',#{Process.pid},'#{type}',#{$uuid},0,#{$con.quote($con.quote_string(msg))})")  
 end
