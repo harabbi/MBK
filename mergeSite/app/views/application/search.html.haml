@@ -45,7 +45,7 @@
                 -else
                   =""
               -elsif attr == "v_categoryids"
-                =product.send(attr).gsub(",", ", ")
+                =product.send(attr).try(:gsub, ",", ", ")
               -else
                 =product.send(attr)
 -else
