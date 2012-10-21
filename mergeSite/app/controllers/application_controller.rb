@@ -66,24 +66,62 @@ class ApplicationController < ActionController::Base
       end
     end
 
-    text = "Parsed the following changes:<BR>"
+    text = ""
+    new_products = [] 
+    updated_products = [] 
     products.each do |product_code, product|
+
       product_obj = ( Product.find_by_v_productcode(product_code.to_s) || Product.new(:v_productcode => product_code) )
+
       product.each do |attr_key, attr_value|
+        # Change the attr_key from search object to product object format
         attr_key = ("v_" + attr_key.to_s.downcase).to_sym
-        attr_value.gsub!('\\','') if attr_value.is_a?(String)
-        product_obj[attr_key] = attr_value
+
+        # Get rid of backslashes and quotes
+        if attr_value.is_a?(String)
+          attr_value.gsub!('\\','')
+          attr_value.gsub!('\"','')
+          attr_value.gsub!('\'','')
+        end
+
+        # Validate the price format if a price attr
+        if Product.price_attributes.include?(attr_key.to_s) and !attr_value.is_a? Float
+          @errors.push "#{product_code}'s #{attr_key} is not formatted correctly."
+          next
+        end
+
+        # Update the value if it's different
+        product_obj[attr_key] = attr_value unless product_obj[attr_key] == attr_value
       end
+
       if product_obj.new_record?
-        text << "Created #{product_code}"
         product_obj.mbk_import_new = true
-      else
-        text << "Updated #{product_code}"
+        new_products.push product_obj
+
+      elsif product_obj.changed?
         product_obj.mbk_import_update = true
+        updated_products.push product_obj
       end
-      @errors.push("#{product_code} did not save properly") unless product_obj.save
+
+      # Validate the object
+      @errors.push "#{product_code} did not pass validation: #{product_obj.errors.full_messages.join(", ")}" unless product_obj.valid?
     end 
 
+    if @errors.empty?
+      text << "New Products (#{new_products.count})"
+      new_products.each do |product|
+        text << "<li>#{product.v_productcode}</li>"
+        #product.save!
+      end
+
+      text << "<BR><BR>Updated Products (#{updated_products.count})"
+      updated_products.each do |product|
+        text << "<li>#{product.v_productcode}</li>"
+        #product.save!
+      end
+    end
+
+    text << "<BR><a href='/'>Return Home</a>"
     render :text => (@errors.empty? ? text : @errors.join("<BR>"))
   end
 end
