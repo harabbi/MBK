@@ -108,4 +108,4 @@ truncate table `magento`.`m_products`;
 	0,
 	now(),
 	now()
-	from `vm_merged`.`vm_merged_products` where `vm_merged_products`.`mbk_import_update`=1 or `vm_merged_products`.`mbk_import_new`=1);
+	from `vm_merged`.`vm_merged_products` where `vm_merged_products`.`mbk_import_update`=0 or `vm_merged_products`.`mbk_import_new`=1);

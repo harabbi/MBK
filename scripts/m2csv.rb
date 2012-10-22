@@ -16,7 +16,7 @@ end
 
 mbk_app_init(__FILE__)
 
-system("find /tmp -size  0 -print0 | xargs -0 sudo rm")
+system("sudo find /tmp -size  0 -print0 | xargs -0 sudo rm")
 ["new", "update"].each() { |tp|
   a = Array.new
   Dir.glob("/tmp/*#{tp}*.csv").each() { |f| a.push(f.split("/").last) }
@@ -27,30 +27,12 @@ system("find /tmp -size  0 -print0 | xargs -0 sudo rm")
         system("sudo mv /tmp/__tmp /tmp/#{f}")
         mbkloginfo(__FILE__, "uploading file #{f}")
         scp.upload! "/tmp/#{f}", "#{MBK_MAGENTO_DATA_DIR}var/customimportexport/"
-        cnt="0"
-        IO.readlines("/tmp/#{f}").each() { |ln|
-          begin
-            next if cnt.next! == "1"
-            s = ln.split("\",\"").first
-            s.slice!(0)
-            mbkloginfo(__FILE__, "downloading #{s}")
-            curl.url = "http://a248.e.akamai.net/origin-cdn.volusion.com/ztna9.tft5b/v/vspfiles/photos/#{s}-2.jpg?"
-            curl.perform
-            file = File.new("/tmp/#{s}.jpg", "wb")
-            file << curl.body_str
-            file.close
-            system("ssh #{MBK_MAGENTO_USER}@#{MBK_MAGENTO_HOST} mkdir -p /ebs/home/pwood/mbksite/media/catalog/product/#{s[0..0].capitalize}/#{s[1..1].capitalize}")
-            scp.upload! "/tmp/#{s}.jpg","/ebs/home/pwood/mbksite/media/catalog/product/#{s[0..0].capitalize}/#{s[1..1].capitalize}"
-          rescue
-            mbklogerr(__FILE__, "unseccessful image download with error: #{$!}")
-          end
-        }
-        system("sudo rm -f /tmp/*.jpg")
-        system("sudo rm -f /tmp/#{f}") 
       rescue
         mbklogerr(__FILE__, "unseccessful scp  with error: #{$!}")
+        #copy to failed diectory
       end
     end
+    system("sudo rm -rf /tmp/#{f}") 
     
     Net::SSH.start(MBK_MAGENTO_HOST, MBK_MAGENTO_USER, :password => MBK_MAGENTO_PASS) do |ssh|
       begin

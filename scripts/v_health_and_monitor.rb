@@ -15,7 +15,7 @@ end
 mbk_app_init(__FILE__)
 
 #Clean out entries older than 7 days except error messages
-$con.execute('delete from `mbk`.`log` where tm < date_sub(now(), interval 10 day)')
+$con.execute('delete from `mbk`.`log` where tm < date_sub(now(), interval 7 day)')
 $con.execute('delete from `mbk`.`log` where tm < date_sub(now(), interval 3 day) and `read`=1')
 
 #Check for messages with errors:

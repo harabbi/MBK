@@ -81,7 +81,6 @@ $con.tables.each() do |t|
       form.field_with(:name => "import_type").value = t
       form.file_uploads.first.file_name = ufname
       form.radiobutton_with(:name => "OVERWRITE", :value => "Y").check
-      form.radiobutton_with(:name => "TEST", :value => "").check
 
       form.submit
       if $a.page.body.include? "Import Duration"

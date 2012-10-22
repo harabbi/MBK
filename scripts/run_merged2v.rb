@@ -1,4 +1,3 @@
-truncate table `vm_merged_products`;
 insert into `vm_merged_products` (select 
 round(productprice,2)   as `v_productprice`,
 round(listprice,2)      as `v_listprice`,
@@ -52,21 +51,53 @@ now(),
 now()
 from Products_Joined );
 
-delete from `vm_merged_products` where `v_stockstatus` < 1;
-delete from `vm_merged_products` where `v_categoryid` = 0;
-update `vm_merged_products`,`mbk`.`category_map` set `vm_merged_products`.m_category_ids = (select `category_map`.`m_name` from `mbk`.`category_map` where `category_map`.`v_id`=`vm_merged_products`.`v_categoryid`);
-update vm_merged_products set v_productname = replace(v_productname,'\\','');
-update vm_merged_products set v_productdescription = replace(v_productdescription,'\\','');
-update vm_merged_products set v_productdescriptionshort = replace(v_productdescriptionshort,'\\','');
-update vm_merged_products set v_productfeatures = replace(v_productfeatures,'\\','');
-update vm_merged_products set v_metatag_title = replace(v_metatag_title,'\\','');
-update vm_merged_products set v_metatag_description = replace(v_metatag_description,'\\','');
 
-update vm_merged_products set m_name = replace(m_name,'\\','');
-update vm_merged_products set m_description = replace(m_description,'\\','');
-update vm_merged_products set m_short_description = replace(m_short_description,'\\','');
-update vm_merged_products set m_mbk_features_area = replace(m_mbk_features_area,'\\','');
-update vm_merged_products set m_meta_title = replace(m_meta_title,'\\','');
-update vm_merged_products set m_meta_description = replace(m_meta_description,'\\','');
+update `mbk_site_export_#{Time.now.strftime("%Y%m%d")}`.`Products_Joined` set 
+`productprice` = #{},
+`listprice` = #{},
+`categoryids` = #{},
+`productcode` = #{},
+`productname` = #{},
+`salesprice` = #{},
+`productweight` = #{},
+`productmanufacturer` = #{},
+`taxableproduct` = #{},
+`productdescription` = #{},
+`productdescriptionshort` = #{},
+`productfeatures` = #{},
+`stockstatus` = #{},
+`metatag_title` = #{},
+`metatag_description` = #{},
+`hideproduct` = #{},
+`stocklowqtyalarm` = #{},
+`maxqty` = #{},
+`howtogetsaleprice` = #{},
+`discountedprice_level1` = #{},
+`discountedprice_level3` = #{},
+`yahoo_category` = #{},
+`displaybegindate`
 
-
+insert into `mbk_site_export_#{Time.now.strftime("%Y%m%d")}`.`Products_Joined` (
+`productprice`,
+`listprice`,
+`categoryids`,
+`productcode`,
+`productname`,
+`salesprice`,
+`productweight`,
+`productmanufacturer`,
+`taxableproduct`,
+`productdescription`,
+`productdescriptionshort`,
+`productfeatures`,
+`stockstatus`,
+`metatag_title`,
+`metatag_description`,
+`hideproduct`,
+`stocklowqtyalarm`,
+`maxqty`,
+`howtogetsaleprice`,
+`discountedprice_level1`,
+`discountedprice_level3`,
+`yahoo_category`,
+`displaybegindate`) values ()

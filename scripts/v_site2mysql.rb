@@ -9,6 +9,12 @@ def numeric_column?(cols, col)
   return false
 end
 #_______________________________________________________________________________
+def datetime_column?(cols, col)
+  c = cols["#{col}"]
+  return true if c == "datetime" 
+  return false
+end
+#_______________________________________________________________________________
 def get_table_name_from_xml(doc)
   begin
     tbl_name = doc.xpath("//Export").first.children.first.name
@@ -167,6 +173,9 @@ Dir.glob("*.part").each() { |xml_document|
     node.children.collect() { |x|  
       if numeric_column?(cols, x.name) and x.text.size > 0
         s << "#{x.text},"
+      elsif datetime_column?(cols, x.name) and x.text.size > 0
+        #12/22/2011  6:50:00 PM   to   YYYY-MM-DD HH:MM:SS
+        s << "'#{x.text}',"
       else
         s << "#{$con.quote($con.quote_string(x.text))}," 
       end

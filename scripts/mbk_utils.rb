@@ -49,7 +49,7 @@ def mbklogdebug(app,msg)
 end
 #_______________________________________________________________________________
 def mbklog(app,msg,type)
-  puts msg
+  #puts msg
   init_mbk_mysql_logger unless $con  
   $con.execute("insert into mbk.log values (NOW(),'#{app}','#{ENV['USER']}',#{Process.pid},'#{type}',#{$uuid},0,#{$con.quote($con.quote_string(msg))})")  
 end
@@ -71,6 +71,16 @@ def mbk_db_connect()
   rescue
     mbklogerr(__FILE__, $!)
   end
+end
+#_______________________________________________________________________________
+def mbk_get_all_product_codes()
+  a=Array.new
+  begin
+    $con.execute("select `v_productcode` from `vm_merged`.`vm_merged_products` group by `v_productcode` order by `v_productcode` asc").each() { |x| a.push("#{x[0].to_s}") }
+  rescue
+    mbklogerr(__FILE__, "ERROR mbk_get_all_product_codes!...#{$!}")   
+  end
+  return a
 end
 #_______________________________________________________________________________
 def mbk_db_create_run(db)
