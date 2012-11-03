@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120930033132) do
+ActiveRecord::Schema.define(:version => 20121103195027) do
 
   create_table "customer_searches", :force => true do |t|
     t.text "search_name"
@@ -48,6 +48,8 @@ ActiveRecord::Schema.define(:version => 20120930033132) do
     t.boolean  "hideproduct"
     t.datetime "created_at",           :null => false
     t.datetime "updated_at",           :null => false
+    t.datetime "displaybegindate_min"
+    t.datetime "displaybegindate_max"
   end
 
   create_table "vm_merged_customers", :id => false, :force => true do |t|

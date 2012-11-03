@@ -85,9 +85,13 @@ class ApplicationController < ActionController::Base
         end
 
         # Validate the price format if a price attr
-        if Product.price_attributes.include?(attr_key.to_s) and !attr_value.is_a? Float
-          @errors.push "#{product_code}'s #{attr_key} is not formatted correctly."
-          next
+        if Product.price_attributes.include?(attr_key.to_s)
+          if attr_value.is_a? Float
+            attr_value = nil if attr_value == 0
+          else
+            @errors.push "#{product_code}'s #{attr_key} is not formatted correctly."
+            next
+          end
         end
 
         # Update the value if it's different

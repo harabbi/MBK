@@ -28,7 +28,7 @@
             Enter a name for the search if you'd like to save this search:  
             =text_field_tag "new_search_name"
 
-          #product_search_table.search_table
+          .search_table
             .search_table_row
               .search_table_header
                 =""
@@ -42,7 +42,7 @@
                 .search_table_cell{ :style => "width: 60px;" }
                   =f.text_field attribute_name, :size => 15
 
-          #product_search_table.search_table
+          -#.search_table
             .attribute_cell 
               .search_table_row
                 .attribute_cell
@@ -59,7 +59,7 @@
                   .attribute_cell
                     =text_field_tag "AttrValue#{num}", nil, :size => 11
 
-          #product_search_table.search_table
+          .search_table
             .search_table_row
               .search_table_header
                 =" "
@@ -81,6 +81,15 @@
               -ProductSearch.ranged_searches.each do |attribute_name|
                 .search_table_cell{ :style => "width: 65px;" }
                   =f.text_field attribute_name + "_max", :size => 11
+
+          .search_table
+            .search_table_header
+              ="Displaybegindate (must be in the format YYYY-MM-DD)"
+            .search_table_row{:style => "text-align: center;"}
+              ="Between:"
+              =f.text_field :displaybegindate_max, :size => 11
+              ="and:"
+              =f.text_field :displaybegindate_min, :size => 11
               
     %tr
       %td{:style => "border: 2px solid #000;"}
