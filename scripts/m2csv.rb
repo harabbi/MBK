@@ -1,10 +1,17 @@
 $: << File.dirname(__FILE__) unless $:.include? File.dirname(__FILE__)
 
 require 'mbk_utils.rb'
-require 'curb'
+require 'set'
 
-curl = Curl::Easy.new
+ROW_COUNT = 1000
 
+class String
+  def numeric?
+    Float(self) != nil rescue false
+  end
+end
+
+#_______________________________________________________________________________
 at_exit do
   if $!.nil? || $!.is_a?(SystemExit) && $!.success?
     mbkloginfo(__FILE__, 'successfully finished')
@@ -13,39 +20,54 @@ at_exit do
     mbklogerr(__FILE__, "unseccessful failure with code #{code}")
   end
 end
+#_______________________________________________________________________________
 
 mbk_app_init(__FILE__)
 
-system("sudo find /tmp -size  0 -print0 | xargs -0 sudo rm")
-["new", "update"].each() { |tp|
-  a = Array.new
-  Dir.glob("/tmp/*#{tp}*.csv").each() { |f| a.push(f.split("/").last) }
-  a.sort.each() { |f| 
-    Net::SCP.start(MBK_MAGENTO_HOST, MBK_MAGENTO_USER, :password => MBK_MAGENTO_PASS) do |scp|
-      begin
-        system("sudo cat /home/philz/mbk/scripts/m_products_cols.txt /tmp/#{f} > /tmp/__tmp")
-        system("sudo mv /tmp/__tmp /tmp/#{f}")
-        mbkloginfo(__FILE__, "uploading file #{f}")
-        scp.upload! "/tmp/#{f}", "#{MBK_MAGENTO_DATA_DIR}var/customimportexport/"
-      rescue
-        mbklogerr(__FILE__, "unseccessful scp  with error: #{$!}")
-        #copy to failed diectory
+export_db = "magento"
+begin
+cnt ="1"
+findex = "1"
+["new", "update"].each() { |t|
+  cols = get_db_columns(export_db, "m_products").keys.to_a
+  5.times() { |i| cols.pop }
+  f = File.open("/tmp/products_#{t}_#{Time.now.to_i}_#{findex}.csv",'w')
+  f.write("#{cols.join(",")}\n")
+  $con.execute("SELECT * FROM #{export_db}.m_products where mbk_import_#{t}=1").each() { |r|
+    rf = Array.new
+    o = ""
+    r.each() { |rr| rf.push(rr) }
+    5.times() { |i| rf.pop }
+    4.times() { |i| rf.pop } if rf.last.blank?
+   
+    rf.each() { |rr| 
+      if rr.blank?
+        o << ","
+      else
+        rr.gsub!(/\"/,"'")
+        rr.gsub!(/\n/, "\\n") 
+        if rr.numeric?
+          o << "#{rr},"
+        else
+          o << "\"#{rr}\","
+        end
       end
-    end
-    system("sudo rm -rf /tmp/#{f}") 
+    }
+    f.write("#{o.chomp(",")}\n")
     
-    Net::SSH.start(MBK_MAGENTO_HOST, MBK_MAGENTO_USER, :password => MBK_MAGENTO_PASS) do |ssh|
-      begin
-        ssh.exec!("cd mbksite; php -f amartinez_customimportexport.php -- -a -b replace -i #{MBK_MAGENTO_DATA_DIR}var/customimportexport/#{f}") if tp == "update"
-        ssh.exec!("cd mbksite; php -f amartinez_customimportexport.php -- -a -b append  -i #{MBK_MAGENTO_DATA_DIR}var/customimportexport/#{f}") if tp == "new"
-        mbkloginfo(__FILE__,  "php -f amartinez_customimportexport.php -- -a -b replace -i #{MBK_MAGENTO_DATA_DIR}var/customimportexport/#{f}")
-        system("ssh #{MBK_MAGENTO_USER}@#{MBK_MAGENTO_HOST} rm -f #{MBK_MAGENTO_DATA_DIR}var/customimportexport/#{f}")
-      rescue
-        mbklogerr(__FILE__, "unseccessful ssh with error #{$!}")
-      end
+    cnt.next!
+    if cnt.to_i > ROW_COUNT
+      cnt ="1"
+      findex.next! 
+      f.close
+      f = File.open("/tmp/products_#{t}_#{Time.now.to_i}_#{findex}.csv",'w')
+      f.write("#{cols.join(",")}\n")
     end
   }
+  f.close 
+  $con.execute("delete FROM #{export_db}.m_products where mbk_import_#{t}=1")
 }
-
-
-
+rescue
+  puts $!
+  mbklogerr(__FILE__, "unseccessful checking for new products #{$!}")  
+end

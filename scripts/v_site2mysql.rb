@@ -171,12 +171,18 @@ Dir.glob("*.part").each() { |xml_document|
   doc.xpath("//#{tbl_name}").each { |node|
     s =  "insert ignore into #{tbl_name} #{ins} values ("
     node.children.collect() { |x|  
-      if numeric_column?(cols, x.name)
-        s << "#{x.text},"
-      elsif datetime_column?(cols, x.name) and x.text.size > 0
-        s << "'#{Time.parse(x.text).strftime("%Y-%m-%d %H:%M:%S")}',"
-      else
-        s << "#{$con.quote($con.quote_string(x.text))}," 
+      begin
+        if x.text.length == 0 
+          s << "NULL,"
+        elsif numeric_column?(cols, x.name)
+          s << "#{x.text},"
+        elsif datetime_column?(cols, x.name) 
+          s << "'#{Time.parse(x.text).strftime("%Y-%m-%d %H:%M:%S")}',"
+        else
+          s << "'#{$con.quote_string(x.text)}',"
+        end
+      rescue
+        s << "NULL,"
       end
     }
     s << "false, NOW(), NOW());"
