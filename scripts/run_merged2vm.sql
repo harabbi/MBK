@@ -113,4 +113,38 @@
 	now(),
 	now()
 	from `vm_merged`.`vm_merged_products` where (`vm_merged_products`.`mbk_import_update`=1 or `vm_merged_products`.`mbk_import_new`=1) AND `m_category_ids` IS NOT NULL GROUP BY `m_mbk_product_code`);
+	
+	
+	insert into `volusion`.`Products_Joined` ( select
+		`v_productcode`,
+		`v_productprice`,
+		`v_listprice`,
+		`v_categoryid`,
+		`v_categoryids`,
+		`v_productname`,
+		`v_saleprice`,
+		`v_productweight`,
+		`v_productmanufacturer`,
+		`v_taxableproduct`,
+		`v_productdescription`,
+		`v_productdescriptionshort`,
+		`v_productfeatures`,
+		`v_stockstatus`,
+		`v_metatag_title`,
+		`v_metatag_description`,
+		`v_hideproduct`,
+		`v_stocklowqtyalarm`,
+		`v_maxqty`,
+		`v_howtogetsaleprice`,
+		`v_discountedprice_level1`,
+		`v_discountedprice_level3`,
+		`v_yahoo_category`,
+		`v_displaybegindate`,
+	`mbk_import_update`,
+	`mbk_import_new`,
+	0,
+	now(),
+	now()
+	from `vm_merged`.`vm_merged_products` where (`vm_merged_products`.`mbk_import_update`=1 or `vm_merged_products`.`mbk_import_new`=1) AND `m_category_ids` IS NOT NULL GROUP BY `m_mbk_product_code`);
+		
 	update `vm_merged`.`vm_merged_products` set `mbk_import_update`=0, `mbk_import_new`=0;

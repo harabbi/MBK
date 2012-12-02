@@ -21,7 +21,6 @@ export_db = "mbk_site_export_#{Time.now.strftime("%Y%m%d")}" if export_db.length
 
 system("mysql -u#{MBK_DB_USER} -p#{MBK_DB_PASS} #{export_db} < scripts/create_vm_merged_products.sql")
 system("mysql -u#{MBK_DB_USER} -p#{MBK_DB_PASS} vm_merged    < scripts/create_vm_merged_products.sql")
-mbkloginfo(__FILE__, 'loading vm_merged...')
+mbkloginfo(__FILE__, 'loading Products_Joined from vm_merged...')
 system("mysql -u#{MBK_DB_USER} -p#{MBK_DB_PASS} #{export_db} < scripts/run_merged2v.sql")
-
 mbkloginfo(__FILE__, 'successfully finished exported vm_merged to volusion...checking for new products')

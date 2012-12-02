@@ -45,14 +45,5 @@ mbk_app_init(__FILE__)
     end
   }
 }
-Net::SSH.start(MBK_MAGENTO_HOST, MBK_MAGENTO_USER, :password => MBK_MAGENTO_PASS) do |ssh|
-  begin
-    ssh.exec!("cd mbksite; php -f amartinez_customimportexport.php -- -a 2>&1 | tee -a reindex.log")
-    mbkloginfo(__FILE__,  "php -f amartinez_customimportexport.php -- -a ")
-  rescue
-    mbklogerr(__FILE__, "unseccessful reindex with error #{$!}")
-  end
-end
-
 
 

@@ -16,4 +16,5 @@ end
 mbk_app_init(__FILE__)
 
 system("mysql -u#{MBK_DB_USER} -p#{MBK_DB_PASS} magento < scripts/create_m_products.sql")
-system("mysql -u#{MBK_DB_USER} -p#{MBK_DB_PASS} magento < scripts/run_merged2m.sql")
+system("mysql -u#{MBK_DB_USER} -p#{MBK_DB_PASS} magento < scripts/create_v_products.sql")
+system("mysql -u#{MBK_DB_USER} -p#{MBK_DB_PASS} magento < scripts/run_merged2vm.sql")

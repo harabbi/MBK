@@ -85,7 +85,7 @@ $con.tables.each() do |t|
       form.submit
       if $a.page.body.include? "Import Duration"
         mbkloginfo(__FILE__, "done uploading!")
-        File.delete(ufname)
+      #  File.delete(ufname)
       else
         mbklogerr(__FILE__, "#{ufname} failed to upload!")
         FileUtils.mv(ufname, "#{ufname}.failed_#{Time.now.to_i.to_s}")

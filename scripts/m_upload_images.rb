@@ -19,18 +19,17 @@ mbkloginfo(__FILE__, "uploading images for file vm_merged products")
 mbk_get_all_product_codes.each() { |s| 
   Net::SCP.start(MBK_MAGENTO_HOST, MBK_MAGENTO_USER, :password => MBK_MAGENTO_PASS) do |scp|
     begin
-      mbkloginfo(__FILE__, "downloading image for #{s}")
-            
-			begin
+      mbkloginfo(__FILE__, "downloading image for #{s}")     
+      begin
         curl.url = "http://a248.e.akamai.net/origin-cdn.volusion.com/ztna9.tft5b/v/vspfiles/photos/#{s}-2.gif?"
         curl.perform
         #convert gif to jpg
       rescue
-  			curl.url = "http://a248.e.akamai.net/origin-cdn.volusion.com/ztna9.tft5b/v/vspfiles/photos/#{s}-2.jpg?"
+        curl.url = "http://a248.e.akamai.net/origin-cdn.volusion.com/ztna9.tft5b/v/vspfiles/photos/#{s}-2.jpg?"
         curl.perform          
       end
            
-			file = File.new("/tmp/#{s}.jpg", "wb")
+      file = File.new("/tmp/#{s}.jpg", "wb")
       file << curl.body_str
       file.close
 puts "uploading image #{s}"						
