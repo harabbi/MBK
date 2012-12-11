@@ -115,13 +115,13 @@ class ApplicationController < ActionController::Base
       text << "New Products (#{new_products.count})"
       new_products.each do |product|
         text << "<li>#{product.v_productcode}</li>"
-        #product.save!
+        product.save!
       end
 
       text << "<BR><BR>Updated Products (#{updated_products.count})"
       updated_products.each do |product|
         text << "<li>#{product.v_productcode}</li>"
-        #product.save!
+        product.save!
       end
     end
 

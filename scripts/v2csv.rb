@@ -3,15 +3,6 @@ $: << File.dirname(__FILE__) unless $:.include? File.dirname(__FILE__)
 require 'mbk_utils.rb'
 require 'set'
 
-ROW_COUNT = 1000
-
-class String
-  def numeric?
-    Float(self) != nil rescue false
-  end
-end
-
-#_______________________________________________________________________________
 at_exit do
   if $!.nil? || $!.is_a?(SystemExit) && $!.success?
     mbkloginfo(__FILE__, 'successfully finished')
@@ -24,48 +15,32 @@ end
 
 mbk_app_init(__FILE__)
 
-export_db = "magento"
+export_db = "volusion"
 begin
 cnt ="1"
-findex = "1"
 ["new", "update"].each() { |t|
-  cols = get_db_columns(export_db, "m_products").keys.to_a
+  cols = get_db_columns(export_db, "Products_Joined").keys.to_a
   5.times() { |i| cols.pop }
-  f = File.open("/tmp/products_#{t}_#{Time.now.to_i}_#{findex}.csv",'w')
-  f.write("#{cols.join(",")}\n")
-  $con.execute("SELECT * FROM #{export_db}.m_products where mbk_import_#{t}=1").each() { |r|
-    rf = Array.new
-    o = ""
-    r.each() { |rr| rf.push(rr) }
-    5.times() { |i| rf.pop }
-    4.times() { |i| rf.pop } if rf.last.blank?
-   
-    rf.each() { |rr| 
-      if rr.blank?
-        o << ","
-      else
-        rr.gsub!(/\"/,"'")
-        rr.gsub!(/\n/, "\\n") 
-        if rr.numeric?
-          o << "#{rr},"
-        else
-          o << "\"#{rr}\","
-        end
+  pcols = get_db_columns("mbk_site_export_#{Time.now.strftime("%Y%m%d")}", "Products_Joined").keys.to_a
+  5.times() { |i| pcols.pop }
+puts cols
+puts pcols
+  $con.execute("SELECT * FROM #{export_db}.Products_Joined where mbk_import_#{t}=1").each() { |r|  
+    rh = Hash.new
+    ph = Hash.new
+    5.times() { |i| r.pop }
+    i=0; r.each() { |rr| rh[cols[i].to_s] = rr; i=i+1 }
+    pcode = rh["productcode"].to_s
+    $con.execute("SELECT * FROM mbk_site_export_#{Time.now.strftime("%Y%m%d")}.Products_Joined where productcode='#{pcode}'").each() { |p|  
+      5.times() { |i| p.pop }
+      i=0; p.each() { |pp| ph[pcols[i].to_s] = pp; i=i+1 }
+    }
+    cols.each() { |c|
+      unless  c == "categoryid" or c == "categoryids"
+        puts rh[c].to_s unless rh[c].to_s == ph[c].to_s
       end
     }
-    f.write("#{o.chomp(",")}\n")
-    
-    cnt.next!
-    if cnt.to_i > ROW_COUNT
-      cnt ="1"
-      findex.next! 
-      f.close
-      f = File.open("/tmp/products_#{t}_#{Time.now.to_i}_#{findex}.csv",'w')
-      f.write("#{cols.join(",")}\n")
-    end
   }
-  f.close 
-  $con.execute("delete FROM #{export_db}.m_products where mbk_import_#{t}=1")
 }
 rescue
   puts $!
