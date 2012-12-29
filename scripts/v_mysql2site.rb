@@ -42,15 +42,15 @@ $con.tables.each() do |t|
         r.delete("password") 
         r.delete("customerid") 
       end
-    
+      
       if t == "Products_Joined"
-        r.delete("producturl")
-        r.delete("photourl") 
-        r.delete("categorytree")
+        r.delete("ProductURL")
+        r.delete("PhotoURL") 
+        r.delete("CategoryTree")
         r.delete("numproductssharingstock")
         r.delete("photoseed")
       end
-    
+
       s = ""; 
       s << "#{r.keys.join(",")}\n" if colhdr; colhdr=false
       c = get_db_columns(v_import_tbl, t)

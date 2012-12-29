@@ -23,8 +23,8 @@ cnt ="1"
   5.times() { |i| cols.pop }
   pcols = get_db_columns("mbk_site_export_#{Time.now.strftime("%Y%m%d")}", "Products_Joined").keys.to_a
   5.times() { |i| pcols.pop }
-puts cols
-puts pcols
+  
+  coltype = get_db_columns("mbk_site_export_#{Time.now.strftime("%Y%m%d")}", "Products_Joined")
   $con.execute("SELECT * FROM #{export_db}.Products_Joined where mbk_import_#{t}=1").each() { |r|  
     rh = Hash.new
     ph = Hash.new
@@ -35,14 +35,53 @@ puts pcols
       5.times() { |i| p.pop }
       i=0; p.each() { |pp| ph[pcols[i].to_s] = pp; i=i+1 }
     }
-    cols.each() { |c|
-      unless  c == "categoryid" or c == "categoryids"
-        puts rh[c].to_s unless rh[c].to_s == ph[c].to_s
+    if ph.size == 0 and t == "new"
+      mbklogdebug(__FILE__,"found a new product => #{rh["productcode"]}")
+      insert_statement = "INSERT INTO mbk_site_export_#{Time.now.strftime("%Y%m%d")}.Products_Joined ("
+      cols.delete("categoryid")
+      cols.delete("categoryids")
+      insert_statement << cols.keys.join(",")
+      insert_statement << ") VALUES ("
+      cols.each() { |c|
+        if coltype[c] == "text" or coltype[c].split("(").first.strip == "varchar" or coltype[c] == "datetime"
+          insert_statement << "'#{rh[c]}',"
+        else
+          insert_statement << "#{rh[c]},"
+        end
+      }
+      insert_statement.chomp!(",")
+      insert_statement << ");"
+      begin
+        puts insert_statement
+       # $con.execute(insert_statement)
+      rescue
+        mbklogerr(__FILE__, "ERROR INSERTING NEW PRODUCT INTO PRODUCTS_JOINED #{$!}")
       end
-    }
+    else
+      changed =false
+      cols.each() { |c|
+        unless  c == "categoryid" or c == "categoryids" or rh[c].blank?
+          unless rh[c].to_s == ph[c].to_s
+            mbklogdebug(__FILE__, "#{rh["productcode"]} -- column #{c} is different: old=#{ph[c]} new=#{rh[c]}")
+            changed=true
+            begin
+              if coltype[c] == "text" or coltype[c].split("(").first.strip == "varchar" or coltype[c] == "datetime"
+                $con.execute("update mbk_site_export_#{Time.now.strftime("%Y%m%d")}.Products_Joined set #{c}='#{rh[c]}',   mbk_ready_to_import=1 where productcode='#{rh["productcode"]}'")
+              else
+                rh[c] = rh[c].to_f.round(2).to_s if coltype[c] == "double" or coltype[c] == "float"
+                $con.execute("update mbk_site_export_#{Time.now.strftime("%Y%m%d")}.Products_Joined set #{c}=#{rh[c]},  mbk_ready_to_import=1 where productcode='#{rh["productcode"]}'")
+              end
+            rescue
+              changed=false
+              mbklogerr(__FILE__, "#{$!}")
+            end
+          end
+        end
+      }
+    end
+    $con.execute("delete from #{export_db}.Products_Joined where productcode='#{rh["productcode"]}'")
   }
 }
 rescue
-  puts $!
   mbklogerr(__FILE__, "unseccessful checking for new products #{$!}")  
 end
