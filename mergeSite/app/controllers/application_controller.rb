@@ -14,12 +14,12 @@ class ApplicationController < ActionController::Base
   def search
     if request.method == "POST"
       if params[:product_search]
-        unless params[:search][:search_id].empty?
-          @product_search = ProductSearch.find(params[:search][:search_id])
+        unless params[:product_search][:id].empty?
+          @product_search = ProductSearch.find(params[:product_search][:id])
         else
           @product_search = ProductSearch.new(params[:product_search])
-          unless params[:search_name].blank?
-            @product_search.search_name = params[:search_name]
+          unless params[:product_search][:search_name].blank?
+            @product_search.search_name = params[:product_search][:search_name]
             @product_search.save!
           end
         end

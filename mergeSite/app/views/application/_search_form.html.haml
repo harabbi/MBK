@@ -6,9 +6,12 @@
     =select "search", "search_id", ProductSearch.all.collect{ |s| [ s.search_name, s.id ] },
             { :include_blank => "enter new search criteria", :selected => @product_search.id }
     -unless @product_search.new_record?
-      =button_to 'Delete This Search', delete_path, :method => :delete, :id => @product_search.id, :confirm => 'You SURE?!?!'
+      =form_tag delete_path, :method => :delete, :style => 'display: inline;' do
+        =hidden_field_tag 'id', @product_search.id
+        =submit_tag 'Delete This Search', :confirm => 'You SURE?!?!', :style => 'display: inline;'
 
 =form_for @product_search, :url => "/search" do |f|
+  =f.hidden_field :id, :value => @product_search.id
   .search_table
     .search_table_row
       .search_table_header
