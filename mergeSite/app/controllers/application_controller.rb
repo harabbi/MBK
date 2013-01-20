@@ -3,8 +3,12 @@ class ApplicationController < ActionController::Base
 
   protect_from_forgery
   def home
-    @all_products = Product.first
-    @product_search = ProductSearch.new
+    if params[:search_id]
+      @product_search = ProductSearch.find_by_id(params[:search_id]) || ProductSearch.new
+      render :partial => 'search_form'
+    else
+      @product_search = ProductSearch.new
+    end
   end
 
   def search
@@ -14,8 +18,8 @@ class ApplicationController < ActionController::Base
           @product_search = ProductSearch.find(params[:search][:search_id])
         else
           @product_search = ProductSearch.new(params[:product_search])
-          unless params[:new_search_name].blank?
-            @product_search.search_name = params[:new_search_name]
+          unless params[:search_name].blank?
+            @product_search.search_name = params[:search_name]
             @product_search.save!
           end
         end
@@ -24,6 +28,11 @@ class ApplicationController < ActionController::Base
     else
       render 'bad_page'
     end
+  end
+
+  def destroy
+    ProductSearch.find(params[:id]).destroy
+    redirect_to root_path
   end
 
   def download

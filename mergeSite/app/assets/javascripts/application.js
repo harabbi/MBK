@@ -16,4 +16,19 @@
 
 $(document).ready(function(){
   $('.preview_search_table').dataTable();
+
+  $('#search_search_id').live('change', function() {
+    $.ajax({
+      type: 'GET',
+      url: '/',
+      dataType: 'html',
+      data: {
+        search_id: $('#search_search_id').val()
+      },
+      success : function(data) {
+        $('#search_form').html(data)
+      }
+    });
+  });
 });
+

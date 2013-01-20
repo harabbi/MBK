@@ -1,0 +1,63 @@
+%h2{:style => "padding-left: 10px;"}
+  Products Export
+
+  %h4
+    ="Pick a saved search or "
+    =select "search", "search_id", ProductSearch.all.collect{ |s| [ s.search_name, s.id ] },
+            { :include_blank => "enter new search criteria", :selected => @product_search.id }
+    -unless @product_search.new_record?
+      =button_to 'Delete This Search', delete_path, :method => :delete, :id => @product_search.id, :confirm => 'You SURE?!?!'
+
+=form_for @product_search, :url => "/search" do |f|
+  .search_table
+    .search_table_row
+      .search_table_header
+        =""
+      -ProductSearch.contains_searches.each do |attribute_name|
+        .search_table_header
+          =attribute_name.gsub("product", "").camelize
+    .search_table_row
+      .search_table_first_cell
+        ="Phrase"
+      -ProductSearch.contains_searches.each do |attribute_name|
+        .search_table_cell{ :style => "width: 60px;" }
+          =f.text_field attribute_name.to_sym, :size => 15
+
+  .search_table
+    .search_table_row
+      .search_table_header
+        =" "
+      -ProductSearch.ranged_searches.each do |attribute_name|
+        .search_table_header
+          -if attribute_name == "stocklowqtyalarm"
+            ="QtyAlarm"
+          -else
+            =attribute_name.gsub("product", "").camelize
+    .search_table_row
+      .search_table_first_cell
+        Min
+      -ProductSearch.ranged_searches.each do |attribute_name|
+        .search_table_cell{ :style => "width: 65px;" }
+          =f.text_field (attribute_name + "_min").to_sym, :size => 11
+    .search_table_row
+      .search_table_first_cell
+        Max 
+      -ProductSearch.ranged_searches.each do |attribute_name|
+        .search_table_cell{ :style => "width: 65px;" }
+          =f.text_field (attribute_name + "_max").to_sym, :size => 11
+
+  .search_table
+    .search_table_header
+      ="Displaybegindate (must be in the format YYYY-MM-DD)"
+    .search_table_row{:style => "text-align: center;"}
+      ="Between:"
+      =f.text_field :displaybegindate_max, :size => 11, :value => @product_search.displaybegindate_max
+      ="and:"
+      =f.text_field :displaybegindate_min, :size => 11, :value => @product_search.displaybegindate_min
+
+  %p
+    Enter a name for the search if you'd like to save this search:  
+    =f.text_field :search_name
+    
+  %p
+    =submit_tag "Search"

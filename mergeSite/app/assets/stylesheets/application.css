@@ -5,6 +5,9 @@
 p {
   padding-left: 10px;
 }
+.button_to, .button_to div {
+  display: inline;
+}
 #header, #search_box, #preview_box {
   width: 100%;
   margin: auto;
