@@ -45,7 +45,7 @@ class ProductSearch < ActiveRecord::Base
     self.class.contains_searches.each do |attr_string|
       unless self.send(attr_string).blank?
         @results = @results.select do |product| 
-          product.send("v_" + attr_string) and product.send("v_" + attr_string).include? self.send(attr_string)
+          product.send("v_" + attr_string) and product.send("v_" + attr_string).downcase.include? self.send(attr_string).downcase
         end
       end
     end

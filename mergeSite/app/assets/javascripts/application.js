@@ -30,5 +30,13 @@ $(document).ready(function(){
       }
     });
   });
+
+  $('input').live('change', function() {
+    $('#update_and_search').show();
+  });
+
+  $('#product_search_search_name').live('change', function() {
+    $('#save_and_search').show();
+  });
 });
 

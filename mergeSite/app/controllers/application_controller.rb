@@ -13,18 +13,18 @@ class ApplicationController < ActionController::Base
 
   def search
     if request.method == "POST"
-      if params[:product_search]
-        unless params[:product_search][:id].empty?
-          @product_search = ProductSearch.find(params[:product_search][:id])
-        else
-          @product_search = ProductSearch.new(params[:product_search])
-          unless params[:product_search][:search_name].blank?
-            @product_search.search_name = params[:product_search][:search_name]
-            @product_search.save!
-          end
-        end
-        @products = @product_search.search_results
+      if params[:commit] == "Search without Save"
+        @product_search = ( ProductSearch.find_by_id(params[:product_search][:id]) || ProductSearch.new(params[:product_search]) )
+      elsif params[:commit] == "Save New Search"
+        @product_search = ProductSearch.new(params[:product_search])
+        @product_search.save!
+      else # Update and Search
+        @product_search = ProductSearch.find(params[:product_search][:id])
+        @product_search.update_attributes(params[:product_search])
       end
+
+      @products = @product_search.search_results
+
     else
       render 'bad_page'
     end

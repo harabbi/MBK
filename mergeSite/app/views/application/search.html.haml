@@ -1,4 +1,49 @@
--unless @products.empty?
+%h2
+  ="Search Criteria for "
+  %i
+    ="#{ @product_search.search_name.blank? ? 'unnamed search' : @product_search.search_name }:"
+%table{ :style => 'display: inline;' }
+  %tr
+    %th
+      =' '
+    -ProductSearch.contains_searches.each do |key|
+      %th
+        ="#{key.sub('product', '')}"
+  %tr
+    %td{ :style => 'width: 50px;' }
+      =' '
+    -ProductSearch.contains_searches.each do |key|
+      %td{ :style => 'border: 1px solid #000;' }
+        ="#{@product_search.send(key).blank? ? 'all' : @product_search.send(key)}"
+
+%table{ :style => 'display: inline; margin-left: 50px;' }
+  %tr
+    %th
+      =' '
+    -ProductSearch.ranged_searches.each do |key|
+      %th
+        ="#{key.sub('product', '')}"
+  %tr
+    %th
+      Max
+    -ProductSearch.ranged_searches.each do |key|
+      %td{ :style => 'border: 1px solid #000;' }
+        ="#{@product_search.send(key + '_max').blank? ? 'all' : @product_search.send(key + '_max')}"
+  %tr
+    %th
+      Min
+    -ProductSearch.ranged_searches.each do |key|
+      %td{ :style => 'border: 1px solid #000;' }
+        ="#{@product_search.send(key + '_min').blank? ? 'all' : @product_search.send(key + '_min')}"
+    
+-if @products.empty?
+  <META HTTP-EQUIV="refresh" CONTENT="5;URL=/">
+  %p
+    ="Your search returned no results... You will be redirected momentarily or click "
+    =link_to 'here', root_path
+    ="."
+  
+-else
   =form_for @product_search, :url => download_path do |f|
     -@product_search.attributes.each do |key, value|
       =hidden_field_tag "search_id", @product_search.id if @product_search.id
@@ -48,5 +93,3 @@
                 =product.send(attr).try(:gsub, ",", ", ")
               -else
                 =product.send(attr)
--else
-  ="Your search returned no results..."

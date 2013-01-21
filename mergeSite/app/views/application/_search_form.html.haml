@@ -10,7 +10,7 @@
         =hidden_field_tag 'id', @product_search.id
         =submit_tag 'Delete This Search', :confirm => 'You SURE?!?!', :style => 'display: inline;'
 
-=form_for @product_search, :url => "/search" do |f|
+=form_for @product_search, :url => "/search", :method => :post do |f|
   =f.hidden_field :id, :value => @product_search.id
   .search_table
     .search_table_row
@@ -59,8 +59,10 @@
       =f.text_field :displaybegindate_min, :size => 11, :value => @product_search.displaybegindate_min
 
   %p
-    Enter a name for the search if you'd like to save this search:  
+    Enter a name if you'd like to save this search:  
     =f.text_field :search_name
     
   %p
-    =submit_tag "Search"
+    =f.submit "Search without Save", :onclick => 'spin()'
+    =f.submit "Save '#{@product_search.search_name}' and Search", :style => 'display: none;', :id => 'update_and_search', :onclick => 'spin()' unless @product_search.new_record?
+    =f.submit "Save New Search", :style => 'display: none;', :id => 'save_and_search', :onclick => 'spin()'
