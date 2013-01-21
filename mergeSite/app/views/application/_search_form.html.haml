@@ -63,6 +63,6 @@
     =f.text_field :search_name
     
   %p
-    =f.submit "Search without Save", :onclick => 'spin()'
-    =f.submit "Save '#{@product_search.search_name}' and Search", :style => 'display: none;', :id => 'update_and_search', :onclick => 'spin()' unless @product_search.new_record?
-    =f.submit "Save New Search", :style => 'display: none;', :id => 'save_and_search', :onclick => 'spin()'
+    =f.submit "Search without Save", :onclick => 'start_spinner()'
+    =f.submit "Save '#{@product_search.search_name}' and Search", :style => 'display: none;', :id => 'update_and_search', :onclick => 'start_spinner()' unless @product_search.new_record?
+    =f.submit "Save New Search", :style => 'display: none;', :id => 'save_and_search', :onclick => 'start_spinner()'

@@ -43,7 +43,7 @@ class ApplicationController < ActionController::Base
     end
     send_data @product_search.search_results.to_xls(:columns => Product.xls_attributes,
                                                     :headers => Product.xls_attributes.collect{|attr| attr.gsub("v_", "").camelize}),
-              :filename => "products.xls"
+                                                    :filename => "products.xls"
   end
 
   def upload
@@ -104,7 +104,16 @@ class ApplicationController < ActionController::Base
         end
 
         # Update the value if it's different
-        product_obj[attr_key] = attr_value unless product_obj[attr_key] == attr_value
+        if attr_key = :stockstatus
+          xls_delta = attr_value - product_obj[attr_key]
+          v_delta = get_v_stockstatus(product_code) || 0
+
+          unless ( xls_delta + v_delta ) == 0
+            product_obj[attr_key] = ( product_obj[attr_key] + xls_delta + v_delta )
+          end
+        else
+          product_obj[attr_key] = attr_value unless product_obj[attr_key] == attr_value
+        end
       end
 
       if product_obj.new_record?

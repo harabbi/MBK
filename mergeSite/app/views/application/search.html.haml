@@ -44,10 +44,12 @@
     ="."
   
 -else
-  =form_for @product_search, :url => download_path do |f|
-    -@product_search.attributes.each do |key, value|
-      =hidden_field_tag "search_id", @product_search.id if @product_search.id
-      =hidden_field_tag "product_search[#{key}]", value unless value.blank? or @product_search.id
+  =form_for @product_search, :url => download_path, :method => :get do |f|
+    -if @product_search.id
+      =hidden_field_tag "search_id", @product_search.id
+    -else
+      -@product_search.attributes.each do |key, value|
+        =hidden_field_tag "product_search[#{key}]", value unless value.blank? or @product_search.id
     %p
       ="Your search returned #{@products.count} results."
     %p
@@ -61,6 +63,8 @@
       %tr.preview_table_row
         %th.preview_table_cell
           ="Image"
+        %th.preview_table_cell
+          ="Links"
         -Product.preview_attributes.each do |attr|
           %th.preview_table_cell
             -if attr == "v_stocklowqtyalarm"
@@ -75,7 +79,11 @@
       -@products.each do |product|
         %tr.preview_table_row
           %td.preview_table_cell{:style => "width: 100px;"}
-            =link_to image_tag("http://a248.e.akamai.net/origin-cdn.volusion.com/ztna9.tft5b/v/vspfiles/photos/#{product.v_productcode}-2.jpg", :width=>"100px"), "http://www.modeltrainstuff.com/ProductDetails.asp?ProductCode=#{product.v_productcode}"
+            =image_tag("http://a248.e.akamai.net/origin-cdn.volusion.com/ztna9.tft5b/v/vspfiles/photos/#{product.v_productcode}-2.jpg", :width=>"100px")
+          %td.preview_table_cell
+            =link_to 'V', "http://www.modeltrainstuff.com/ProductDetails.asp?ProductCode=#{product.v_productcode}"
+            =" - "
+            =link_to 'M', "http://www.modeltrainstuff.com/ProductDetails.asp?ProductCode=#{product.v_productcode}"
           -Product.preview_attributes.each do |attr|
             %td.preview_table_cell{:class => "#{'long_cell' if Product.long_attributes.include? attr}" +      |
               "#{'short_cell' if Product.short_attributes.include? attr}"}                                   |
