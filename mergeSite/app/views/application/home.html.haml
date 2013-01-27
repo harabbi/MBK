@@ -8,7 +8,7 @@
       %td{:style => "border: 2px solid #000;"}
         %h2{:style => "padding-left: 10px;"}
           Product/Customer Import
-        =form_tag upload_path, :multipart => true do
+        =form_tag upload_path, :method => :put, :multipart => true do
           %p
             =file_field_tag 'file', :size => 60
             =submit_tag "Upload"

@@ -1,0 +1,30 @@
+=link_to "Return Home", '/'
+
+-if @errors.empty?
+  %table{ :style => "margin: auto; width: 90%; text-align: left;" }
+    %tr
+      %th{ :style => "width: 25%;" }
+        ="Unchanged Products (#{@unchanged_products.count})"
+      %th{ :style => "width: 25%;" }
+        ="New Products (#{@new_products.count})"
+      %th{ :style => "width: 50%;" }
+        ="Updated Products (#{@updated_products.count})"
+    %tr
+      %td
+        -@unchanged_products.each do |product|
+          %li
+            ="#{product.v_productcode}"
+      %td
+        -@new_products.each do |product|
+          %li
+            ="#{product.v_productcode}"
+      %td
+        -@updated_products.each do |product, changed_attrs|
+          %li
+            ="#{product.v_productcode}"
+            ="(#{changed_attrs})"
+
+-else
+  -@errors.each do |error|
+    %p
+      =error  

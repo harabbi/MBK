@@ -43,16 +43,16 @@ $(document).ready(function(){
 function start_spinner() {
   console.log('starting...');
   var opts = {
-    lines: 11, // The number of lines to draw
-    length: 200, // The length of each line
-    width: 25, // The line thickness
-    radius: 45, // The radius of the inner circle
+    lines: 12, // The number of lines to draw
+    length: 120, // The length of each line
+    width: 40, // The line thickness
+    radius: 55, // The radius of the inner circle
     corners: 1, // Corner roundness (0..1)
     rotate: 0, // The rotation offset
-    color: '#000', // #rgb or #rrggbb
+    color: '#888', // #rgb or #rrggbb
     speed: 0.8, // Rounds per second
     trail: 60, // Afterglow percentage
-    shadow: false, // Whether to render a shadow
+    shadow: true, // Whether to render a shadow
     hwaccel: false, // Whether to use hardware acceleration
     className: 'spinner', // The CSS class to assign to the spinner
     zIndex: 2e9, // The z-index (defaults to 2000000000)

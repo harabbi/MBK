@@ -1,5 +1,6 @@
 class ApplicationController < ActionController::Base
   require 'spreadsheet'
+  require 'net/http'
 
   protect_from_forgery
   def home
@@ -75,36 +76,20 @@ class ApplicationController < ActionController::Base
       end
     end
 
-    text = ""
-    new_products = [] 
-    updated_products = [] 
+    @new_products = [] 
+    @updated_products = [] 
+    @unchanged_products = []
+
     products.each do |product_code, product|
 
       product_obj = ( Product.find_by_v_productcode(product_code.to_s) || Product.new(:v_productcode => product_code) )
 
       product.each do |attr_key, attr_value|
         # Change the attr_key from search object to product object format
-        attr_key = ("v_" + attr_key.to_s.downcase).to_sym
-
-        # Get rid of backslashes and quotes
-        if attr_value.is_a?(String)
-          attr_value.gsub!('\\','')
-          attr_value.gsub!('\"','')
-          attr_value.gsub!('\'','')
-        end
-
-        # Validate the price format if a price attr
-        if Product.price_attributes.include?(attr_key.to_s)
-          if attr_value.is_a? Float
-            attr_value = nil if attr_value == 0
-          else
-            @errors.push "#{product_code}'s #{attr_key} is not formatted correctly."
-            next
-          end
-        end
+        attr_key = ("v_" + attr_key.to_s.underscore).to_sym
 
         # Update the value if it's different
-        if attr_key = :stockstatus
+        if attr_key == :v_stockstatus
           xls_delta = attr_value - product_obj[attr_key]
           v_delta = get_v_stockstatus(product_code) || 0
 
@@ -118,11 +103,18 @@ class ApplicationController < ActionController::Base
 
       if product_obj.new_record?
         product_obj.mbk_import_new = true
-        new_products.push product_obj
+        @new_products.push product_obj
 
       elsif product_obj.changed?
         product_obj.mbk_import_update = true
-        updated_products.push product_obj
+        changed_attrs = product_obj.attribute_names.select do |attr|
+          !['mbk_import_update', 'mbk_import_new'].include? attr and product_obj.send(attr + '_changed?')
+        end.join(',').gsub('v_', '')
+
+        @updated_products.push [ product_obj, changed_attrs ]
+
+      else
+        @unchanged_products.push product_obj
       end
 
       # Validate the object
@@ -130,20 +122,30 @@ class ApplicationController < ActionController::Base
     end 
 
     if @errors.empty?
-      text << "New Products (#{new_products.count})"
-      new_products.each do |product|
-        text << "<li>#{product.v_productcode}</li>"
+      @new_products.each do |product|
         product.save!
       end
 
-      text << "<BR><BR>Updated Products (#{updated_products.count})"
-      updated_products.each do |product|
-        text << "<li>#{product.v_productcode}</li>"
+      @updated_products.each do |product, nevermind|
         product.save!
       end
     end
 
-    text << "<BR><a href='/'>Return Home</a>"
-    render :text => (@errors.empty? ? text : @errors.join("<BR>"))
+    render "results"
+  end
+
+  private
+  def get_v_stockstatus(product_code)
+    uri = URI("http://www.modeltrainstuff.com/net/WebService.aspx")
+    params = { :Login => "philz@modeltrainstuff.com",
+               :EncryptedPassword => "88AF8010F29099954CF0ECB014C8D83DD29DB0B57322B045875DD653705B89A7",
+               :EDI_Name => "Generic/\Products",
+               :SELECT_Columns => "p.StockStatus",
+               :WHERE_Column => "p.ProductCode",
+               :WHERE_Value => "#{product_code}" }
+
+    uri.query = URI.encode_www_form(params)
+
+    Net::HTTP.get(uri).match(/Stock.*\d+/)[0].sub(/.*>/,'').to_i
   end
 end
