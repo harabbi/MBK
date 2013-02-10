@@ -12,7 +12,7 @@ truncate table `magento`.`m_products`;
 	"",
 	"",
 	"",
-	"0",
+	`m_code`,
 	`m_weight`,
 	`m_manufacturer`,	
 	replace(`m_meta_title`,'"','\''),  

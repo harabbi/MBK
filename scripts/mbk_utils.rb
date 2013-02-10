@@ -65,6 +65,7 @@ def mbk_db_connect()
       :host     => MBK_DB_HOST,
       :username => MBK_DB_USER,
       :password => MBK_DB_PASS,
+      :encoding => 'utf8',
       :database => "mysql"
     )
     $con = ActiveRecord::Base.connection

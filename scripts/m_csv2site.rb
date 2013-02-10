@@ -36,8 +36,8 @@ mbk_app_init(__FILE__)
     Net::SSH.start(MBK_MAGENTO_HOST, MBK_MAGENTO_USER, :password => MBK_MAGENTO_PASS) do |ssh|
       begin
         action = ((tp == "update") ? "replace" : "append")
-        ssh.exec!("cd mbksite; php -f amartinez_customimportexport.php -- -b #{action} -i #{MBK_MAGENTO_DATA_DIR}var/customimportexport/#{tp}/#{f} 2>&1 | tee -a #{tp}log")
-        mbkloginfo(__FILE__,  "php -f amartinez_customimportexport.php -- -a -b replace -i #{MBK_MAGENTO_DATA_DIR}var/customimportexport/#{f}")
+        ssh.exec!("cd mbksite; php -f amartinez_customimportexport.php -- -b #{action} -i #{MBK_MAGENTO_DATA_DIR}var/customimportexport/#{tp}/#{f} 2>&1 | tee -a #{tp}.log")
+        mbkloginfo(__FILE__,  "php -f amartinez_customimportexport.php -- -b #{action} -i #{MBK_MAGENTO_DATA_DIR}var/customimportexport/#{tp}/#{f}")
         #system("ssh #{MBK_MAGENTO_USER}@#{MBK_MAGENTO_HOST} rm -f #{MBK_MAGENTO_DATA_DIR}var/customimportexport/#{f}")
       rescue
         mbklogerr(__FILE__, "unseccessful ssh with error #{$!}")

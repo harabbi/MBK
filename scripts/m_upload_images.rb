@@ -32,9 +32,9 @@ mbk_get_all_product_codes.each() { |s|
       file = File.new("/tmp/#{s}.jpg", "wb")
       file << curl.body_str
       file.close
-puts "uploading image #{s}"						
-      system("ssh #{MBK_MAGENTO_USER}@#{MBK_MAGENTO_HOST} mkdir -p /ebs/home/pwood/mbksite/media/import}")
-      scp.upload! "/tmp/#{s}.jpg","/ebs/home/pwood/mbksite/media/import"
+puts "uploading image #{s}"
+      system("ssh #{MBK_MAGENTO_USER}@#{MBK_MAGENTO_HOST} mkdir -p /ebs/home/pwood/mbksite/media/catalog/product/#{s.upcase[0]}/#{s.upcase[1]}")
+      scp.upload! "/tmp/#{s}.jpg","/ebs/home/pwood/mbksite/media/catalog/product/#{s.upcase[0]}/#{s.upcase[1]}/"
       system("rm -rf /tmp/#{s}.jpg")
     rescue
       mbklogerr(__FILE__, "unseccessful image download with error: #{$!}")

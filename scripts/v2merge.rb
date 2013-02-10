@@ -32,17 +32,24 @@ begin
   $con.execute("SELECT v_productcode FROM #{export_db}.vm_merged_products").each() { |r| r1.push(r[0].to_s) }
   $con.execute("SELECT v_productcode FROM vm_merged.vm_merged_products").each()    { |r| r2.push(r[0].to_s) }
   r3=(r1-r2)
+  #find all the new products since last update
   r3.each() { |id|
    $con.execute("insert into `vm_merged`.`vm_merged_products` (select * from #{export_db}.vm_merged_products where v_productcode='#{id}')")
    $con.execute("update `vm_merged`.`vm_merged_products` set mbk_import_new=1 where v_productcode='#{id}'")
-   #$con.execute("delete from `#{export_db}`.`vm_merged_products` where v_productcode='#{id}'")          
+   $con.execute("delete from `#{export_db}`.`vm_merged_products` where v_productcode='#{id}'")
+  }
+  r5=(r2-r1)
+  #delete  items that may have gone out of stock between last update
+  r5.each() { |id|
+    $con.execute("delete from `vm_merged`.`vm_merged_products` where v_productcode='#{id}'")
   }
 rescue
-  mbklogerr(__FILE__, "unseccessful checking for new products #{$!}")  
+  mbklogerr(__FILE__, "unseccessful checking for new products #{$!}")
 end
 
 mbkloginfo(__FILE__, 'checking for updated products...')
-r4=r1-r3
+#find products they both share in common and update 
+r4=r1&r2
 begin
   r4.each() { |id|
     rs1 = $con.execute("select * from `vm_merged`.`vm_merged_products` where v_productcode='#{id}'")
@@ -50,12 +57,12 @@ begin
     if rs1.count == 1 and rs2.count == 1 then
       rs1=rs1.to_a
       rs2=rs2.to_a
-      #5.times() { |i| rs1.pop; rs2.pop }
+      5.times() { |i| rs1.pop; rs2.pop }
       if rs1.to_set != rs2.to_set then 
         $con.execute("delete from `vm_merged`.`vm_merged_products` where v_productcode='#{id}'")       
         $con.execute("insert into `vm_merged`.`vm_merged_products` (select * from #{export_db}.vm_merged_products where v_productcode='#{id}')")
         $con.execute("update `vm_merged`.`vm_merged_products` set mbk_import_update=1 where v_productcode='#{id}'")
-        #$con.execute("delete from `#{export_db}`.`vm_merged_products` where v_productcode='#{id}'")          
+        $con.execute("delete from `#{export_db}`.`vm_merged_products` where v_productcode='#{id}'")          
       end
     end
   }

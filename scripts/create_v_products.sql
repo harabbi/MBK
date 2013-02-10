@@ -24,6 +24,7 @@ CREATE TABLE if not exists `volusion`.`Products_Joined`(
 `discountedprice_level3` double,
 `yahoo_category`         text,
 `displaybegindate`     datetime,
+`vendor_price`         double,
 `mbk_import_update`     tinyint(1) DEFAULT '0',
 `mbk_import_new`        tinyint(1) DEFAULT '0',
 `mbk_ready_to_import`   tinyint(1) DEFAULT '0',

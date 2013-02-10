@@ -1,7 +1,8 @@
 $: << File.dirname(__FILE__) unless $:.include? File.dirname(__FILE__)
 
 require 'mbk_utils.rb'
-
+require 'date'
+require 'time'
 #_______________________________________________________________________________
 def numeric_column?(cols, col)
   c = cols["#{col}"]
@@ -177,7 +178,7 @@ Dir.glob("*.part").each() { |xml_document|
         elsif numeric_column?(cols, x.name)
           s << "#{x.text},"
         elsif datetime_column?(cols, x.name) 
-          s << "'#{Time.parse(x.text).strftime("%Y-%m-%d %H:%M:%S")}',"
+          s << "'#{Date.strptime(x.text, '%m/%d/%y').strftime("%Y-%m-%d %H:%M:%S")}',"
         else
           s << "'#{$con.quote_string(x.text)}',"
         end
