@@ -1,11 +1,15 @@
 class Product < ActiveRecord::Base
+  require 'net/http'
+
   set_table_name "vm_merged_products"
   set_primary_key "m_mbk_product_code"
 
   validate :product_code_format
   
   def product_code_format
-    errors.add :v_productcode, "must be AAA-###-###" if self.v_productcode.match(/[A-Z]{3}-[0-9]{3}-[0-9]{3}/).nil? and false #TODO
+    if self.v_productcode.match(/[A-Z]{3}-[0-9]{3}-[0-9]{3}/).nil? and false #TODO
+      errors.add :v_productcode, "must be AAA-###-###"
+    end
   end
 
   def self.price_attributes
@@ -53,5 +57,22 @@ class Product < ActiveRecord::Base
   
   def self.short_attributes
     "v_categoryids"
+  end
+
+  def v_image_uri(size = 2)
+    uri = "http://a248.e.akamai.net/origin-cdn.volusion.com/ztna9.tft5b/v/vspfiles/photos/#{v_productcode}-#{size}.jpg"
+    uri.gsub(' ', '%20')
+  end
+
+  def v_image_exists?
+    Net::HTTP.get_response(URI.parse(v_image_uri)).code == "200"
+  end
+
+  def mbk_image_dir
+    "/ebs/home/pwood/mbksite/media/catalog/product/#{v_productcode.upcase[0]}/#{v_productcode.upcase[1]}"
+  end
+  
+  def mbk_image_uri
+    "/ebs/home/pwood/mbksite/media/catalog/product/#{v_productcode.upcase[0]}/#{v_productcode.upcase[1]}/"
   end
 end

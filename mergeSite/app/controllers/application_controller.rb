@@ -1,6 +1,9 @@
 class ApplicationController < ActionController::Base
   require 'spreadsheet'
   require 'net/http'
+  require 'net/ssh'
+  require 'net/scp'
+  require '../scripts/mbk_params.rb'
 
   protect_from_forgery
   def home
@@ -132,6 +135,29 @@ class ApplicationController < ActionController::Base
     end
 
     render "results"
+  end
+
+  def change_image
+    @product = Product.find_by_v_productcode(params[:productcode])
+
+    if request.method == "POST"
+      Net::SSH.start(MBK_MAGENTO_SSH_HOST, MBK_MAGENTO_SSH_USER, :password => MBK_MAGENTO_SSH_PASS) do |ssh|
+        begin
+          ssh.exec!("mkdir -p #{@product.mbk_image_dir}")
+          Net::SCP.start(MBK_MAGENTO_SSH_HOST, MBK_MAGENTO_SSH_USER, :password => MBK_MAGENTO_SSH_PASS) do |scp|
+            begin
+              scp.upload!(params[:image].path, @product.mbk_image_uri)
+              @status = "Oh... that looks good!"
+            rescue
+              mbklogerr(__FILE__, "unseccessful image download with error: #{$!}")
+              @status = "Uh oh... it didn't go."
+            end
+          end
+        rescue
+          @status = "Magento login failed"
+        end
+      end
+    end
   end
 
   private

@@ -79,7 +79,9 @@
       -@products.each do |product|
         %tr.preview_table_row
           %td.preview_table_cell{:style => "width: 100px;"}
-            =image_tag("http://a248.e.akamai.net/origin-cdn.volusion.com/ztna9.tft5b/v/vspfiles/photos/#{product.v_productcode}-2.jpg", :width=>"100px")
+            -if product.v_image_exists?
+              =image_tag("#{product.v_image_uri}", :width=>"100px")
+            =link_to 'Change Image', image_path(product)
           %td.preview_table_cell
             =link_to 'V', "http://www.modeltrainstuff.com/ProductDetails.asp?ProductCode=#{product.v_productcode}"
             =" - "
