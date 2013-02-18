@@ -1,0 +1,21 @@
+%div{ :style => "text-align: center;" }
+  %h2
+    ="Upload #{ @product.v_image_exists? ? 'a new' : 'an'} image for #{@product.v_productcode}:"
+  %h3
+    %i
+      =@status
+
+  -if @product.v_image_exists?
+    =image_tag("#{@product.v_image_uri}", :height=>"200px", :style => "margin: 30px;")
+
+  %div
+    =link_to 'Volusion', "http://www.modeltrainstuff.com/ProductDetails.asp?ProductCode=#{@product.v_productcode}"
+    =" "
+    =link_to 'Magento', "http://dev.mbk.thegrandriver.net/#{@product.v_productname.downcase.gsub(/[^\w]/, ' ').gsub(/ +/, ' ').gsub(/ /, '-').gsub(/-$/, '')}.html"
+
+  =form_tag image_path(@product), :multipart => true do
+    %div
+      =file_field_tag :image
+    %div
+      =select_tag :size, options_for_select([["Large", 2], ["Thumbnail", 2]])
+      =submit_tag 'Submit'
