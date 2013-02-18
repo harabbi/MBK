@@ -3,6 +3,7 @@ class ApplicationController < ActionController::Base
   require 'net/http'
   require 'net/ssh'
   require 'net/scp'
+  require 'net/ftp'
   require '../scripts/mbk_params.rb'
 
   protect_from_forgery
@@ -141,20 +142,35 @@ class ApplicationController < ActionController::Base
     @product = Product.find_by_v_productcode(params[:productcode])
 
     if request.method == "POST"
+      @status = ""
+
+      #MBK Image Upload
       Net::SSH.start(MBK_MAGENTO_SSH_HOST, MBK_MAGENTO_SSH_USER, :password => MBK_MAGENTO_SSH_PASS) do |ssh|
         begin
           ssh.exec!("mkdir -p #{@product.mbk_image_dir}")
           Net::SCP.start(MBK_MAGENTO_SSH_HOST, MBK_MAGENTO_SSH_USER, :password => MBK_MAGENTO_SSH_PASS) do |scp|
             begin
               scp.upload!(params[:image].path, @product.mbk_image_uri)
-              @status = "Oh... that looks good!"
+              @status << "Grand River: Oh... that looks good!\n"
             rescue
               mbklogerr(__FILE__, "unseccessful image download with error: #{$!}")
-              @status = "Uh oh... it didn't go."
+              @status << "Grand River: Uh oh... it didn't go.\n"
             end
           end
         rescue
-          @status = "Magento login failed"
+          @status << "Grand River: Login failed\n"
+        end
+      end
+
+      #Volusion Image Upload
+      Net::FTP.new('ftp.modeltrainstuff.com') do |ftp|
+        begin
+          ftp.login(V_FTP_USER, V_FTP_PASS)
+          ftp.chdir('vspfiles/photos')
+          ftp.putbinaryfile(params[:image].path, @product.v_image_name(params[:size]))
+          @status << "Volusion: That's a nice photo.\n"
+        rescue
+          @status << "Volusion: Login failed\n"
         end
       end
     end

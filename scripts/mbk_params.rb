@@ -24,6 +24,9 @@ MBK_DB_PASS             = ENV["MBK_DB_PASS"]
 
 MBK_ADMIN_EMAIL         = ENV["MBK_ADMIN_EMAIL"]
 
+V_FTP_USER              = ENV["V_FTP_USER"]
+V_FTP_PASS              = ENV["V_FTP_PASS"]
+
 #Array of arrays for ["<appname>", <freq in minutes>]
 #60 -> 1 hr, 720 -> 12 hrs, 1440 -> 24 hrs, 2160 -> 36 hrs
 MBK_APP_AND_RUN_FREQ    = [ ["scripts/v_csv2site.rb", 30],

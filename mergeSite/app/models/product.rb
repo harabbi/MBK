@@ -60,8 +60,11 @@ class Product < ActiveRecord::Base
   end
 
   def v_image_uri(size = 2)
-    uri = "http://a248.e.akamai.net/origin-cdn.volusion.com/ztna9.tft5b/v/vspfiles/photos/#{v_productcode}-#{size}.jpg"
-    uri.gsub(' ', '%20')
+    uri = "http://a248.e.akamai.net/origin-cdn.volusion.com/ztna9.tft5b/v/vspfiles/photos/#{v_image_name(size)}"
+  end
+
+  def v_image_name(size)
+    "#{v_productcode}-#{size}.jpg".gsub(' ', '%20')
   end
 
   def v_image_exists?
