@@ -1,8 +1,10 @@
 class Product < ActiveRecord::Base
   require 'net/http'
 
-  set_table_name "vm_merged_products"
-  set_primary_key "m_mbk_product_code"
+  self.table_name= "vm_merged_products"
+  self.primary_key= "m_mbk_product_code"
+
+  has_one :attribute_set
 
   validate :product_code_format
   
@@ -71,11 +73,19 @@ class Product < ActiveRecord::Base
     Net::HTTP.get_response(URI.parse(v_image_uri)).code == "200"
   end
 
+  def v_product_path
+    "http://www.modeltrainstuff.com/ProductDetails.asp?ProductCode=#{v_productcode}"
+  end
+
   def mbk_image_dir
     "/ebs/home/pwood/mbksite/media/catalog/product/#{v_productcode.upcase[0]}/#{v_productcode.upcase[1]}"
   end
   
   def mbk_image_uri
-    "/ebs/home/pwood/mbksite/media/catalog/product/#{v_productcode.upcase[0]}/#{v_productcode.upcase[1]}/"
+    "/ebs/home/pwood/mbksite/media/catalog/product/#{v_productcode.upcase[0]}/#{v_productcode.upcase[1]}/#{v_productcode}.jpg"
+  end
+
+  def mbk_product_path
+    "http://dev.mbk.thegrandriver.net/#{v_productname.downcase.gsub(/[^\w]/, ' ').gsub(/ +/, ' ').gsub(/ /, '-').gsub(/-$/, '')}.html"
   end
 end

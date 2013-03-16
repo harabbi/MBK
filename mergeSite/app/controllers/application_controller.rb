@@ -5,6 +5,7 @@ class ApplicationController < ActionController::Base
   require 'net/scp'
   require 'net/ftp'
   require '../scripts/mbk_params.rb'
+  require 'RMagick'
 
   protect_from_forgery
   def home
@@ -142,7 +143,11 @@ class ApplicationController < ActionController::Base
     @product = Product.find_by_v_productcode(params[:productcode])
 
     if request.method == "POST"
-      @status = ""
+      @status ||= ""
+
+      # Make sure the image is a jpg
+      image = Magick::Image.read(params[:image].path).first
+      image.write('/tmp/temp.jpg')
 
       #MBK Image Upload
       Net::SSH.start(MBK_MAGENTO_SSH_HOST, MBK_MAGENTO_SSH_USER, :password => MBK_MAGENTO_SSH_PASS) do |ssh|
@@ -150,28 +155,62 @@ class ApplicationController < ActionController::Base
           ssh.exec!("mkdir -p #{@product.mbk_image_dir}")
           Net::SCP.start(MBK_MAGENTO_SSH_HOST, MBK_MAGENTO_SSH_USER, :password => MBK_MAGENTO_SSH_PASS) do |scp|
             begin
-              scp.upload!(params[:image].path, @product.mbk_image_uri)
+              scp.upload!('/tmp/temp.jpg', @product.mbk_image_uri)
               @status << "Grand River: Oh... that looks good!\n"
             rescue
               mbklogerr(__FILE__, "unseccessful image download with error: #{$!}")
               @status << "Grand River: Uh oh... it didn't go.\n"
             end
           end
+          ssh.exec!("cd /ebs/home/pwood/mbksite/media/catalog/product/cache")
+          ssh.exec!("rm `find -name #{@product.v_productcode}`")
         rescue
           @status << "Grand River: Login failed\n"
         end
       end
 
       #Volusion Image Upload
-      Net::FTP.new('ftp.modeltrainstuff.com') do |ftp|
+      Net::FTP.open('ftp.modeltrainstuff.com') do |ftp|
         begin
           ftp.login(V_FTP_USER, V_FTP_PASS)
           ftp.chdir('vspfiles/photos')
-          ftp.putbinaryfile(params[:image].path, @product.v_image_name(params[:size]))
+
+          # pure file
+          ftp.putbinaryfile('/tmp/temp.jpg', @product.v_image_name("2"))
+
+          # width = 150px 
+          image_w150 = image.resize_to_fit(150, 150)
+          image_w150.write('/tmp/temp.jpg')
+          ftp.putbinaryfile('/tmp/temp.jpg', @product.v_image_name("1"))
+          ftp.putbinaryfile('/tmp/temp.jpg', @product.v_image_name("0"))
+          ftp.putbinaryfile('/tmp/temp.jpg', @product.v_image_name("2T"))
+
+          # height = 25px
+          image_h25 = image.resize_to_fit(25, 25)
+          image_h25.write('/tmp/temp.jpg')
+          ftp.putbinaryfile('/tmp/temp.jpg', @product.v_image_name("2S"))
+
+          # width = 50px
+          image_w50 = image.resize_to_fit(50, 50)
+          image_w50.write('/tmp/temp.jpg')
+          ftp.putbinaryfile('/tmp/temp.jpg', @product.v_image_name("2t_mobile").downcase)
           @status << "Volusion: That's a nice photo.\n"
         rescue
           @status << "Volusion: Login failed\n"
         end
+      end
+    end
+  end
+
+  def reindex_magento
+    @product = Product.find_by_v_productcode(params[:productcode])
+    
+    Net::SSH.start(MBK_MAGENTO_SSH_HOST, MBK_MAGENTO_SSH_USER, :password => MBK_MAGENTO_SSH_PASS) do |ssh|
+      begin
+        ssh.exec!("php /ebs/home/pwood/mbksite/amartinez_customimportexport.php -r  < /dev/null")
+        @status = "Reindexing was started... check the magento link in a few minutes to ensure success!"
+      rescue
+        @status = "Reindex FAILED!"
       end
     end
   end

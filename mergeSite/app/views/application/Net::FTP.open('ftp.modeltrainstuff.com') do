@@ -7,20 +7,19 @@
   %div
     -if @status and @status.include?("Grand River: Oh... that looks good!")
       =link_to "Click here", reindex_path(@product)
-      =" to reindex Magento's Images (this can take a few minutes, so wait if you have more images to upload)."
+      =" to reindex Magento's Images (this can take a few minutes, so wait until you have no more images to upload)."
 
   %div
     -if @product.v_image_exists?
       =image_tag("#{@product.v_image_uri}", :height=>"200px", :style => "margin: 30px;")
 
-  %div{ :style => "padding: 20px 0;" }
-    Product links:
-    =link_to 'Volusion', @product.v_product_path
+  %div
+    =link_to 'Volusion', "http://www.modeltrainstuff.com/ProductDetails.asp?ProductCode=#{@product.v_productcode}"
     =" "
-    =link_to 'Grand River', @product.mbk_product_path
+    =link_to 'Grand River', @product.mbk_image_path
 
   =form_tag image_path(@product), :multipart => true do
     %div
       =file_field_tag :image
+    %div
       =submit_tag 'Submit'
-      =link_to "Return Home", '/'

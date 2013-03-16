@@ -83,9 +83,9 @@
               =image_tag("#{product.v_image_uri}", :width=>"100px")
             =link_to 'Change Image', image_path(product)
           %td.preview_table_cell
-            =link_to 'V', "http://www.modeltrainstuff.com/ProductDetails.asp?ProductCode=#{product.v_productcode}"
+            =link_to 'V', product.v_product_path
             =" - "
-            =link_to 'M', "http://dev.mbk.thegrandriver.net/#{product.v_productname.downcase.gsub(/[^\w]/, ' ').gsub(/ +/, ' ').gsub(/ /, '-').gsub(/-$/, '')}.html"
+            =link_to 'M', product.mbk_product_path
           -Product.preview_attributes.each do |attr|
             %td.preview_table_cell{:class => "#{'long_cell' if Product.long_attributes.include? attr}" +      |
               "#{'short_cell' if Product.short_attributes.include? attr}"}                                   |
