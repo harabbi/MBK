@@ -11,7 +11,12 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20121103195027) do
+ActiveRecord::Schema.define(:version => 20130317070025) do
+
+  create_table "attribute_sets", :force => true do |t|
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
 
   create_table "customer_searches", :force => true do |t|
     t.text "search_name"
@@ -26,6 +31,20 @@ ActiveRecord::Schema.define(:version => 20121103195027) do
     t.text "phonenumber"
     t.text "faxnumber"
     t.text "emailaddress"
+  end
+
+  create_table "mbk_attributes", :force => true do |t|
+    t.string   "name"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
+
+  create_table "product_attributes", :force => true do |t|
+    t.string   "v_productcode"
+    t.string   "mbk_attribute_name"
+    t.string   "mbk_attribute_value"
+    t.datetime "created_at",          :null => false
+    t.datetime "updated_at",          :null => false
   end
 
   create_table "product_searches", :force => true do |t|
@@ -61,7 +80,7 @@ ActiveRecord::Schema.define(:version => 20121103195027) do
     t.float     "v_listprice"
     t.integer   "v_categoryid",              :limit => 8
     t.text      "v_categoryids"
-    t.text      "v_productcode"
+    t.string    "v_productcode"
     t.text      "v_productname"
     t.float     "v_saleprice"
     t.float     "v_productweight"
@@ -81,6 +100,7 @@ ActiveRecord::Schema.define(:version => 20121103195027) do
     t.float     "v_discountedprice_level3"
     t.text      "v_yahoo_category"
     t.datetime  "v_displaybegindate"
+    t.float     "v_vendor_price"
     t.float     "m_price"
     t.float     "m_mbk_retail_price"
     t.text      "m_category_ids"
@@ -102,11 +122,14 @@ ActiveRecord::Schema.define(:version => 20121103195027) do
     t.integer   "m_max_sale_qty",            :limit => 8
     t.float     "m_mbk_map_price"
     t.float     "m__tier_price_price"
+    t.float     "m_cost"
     t.boolean   "mbk_import_update",                      :default => false
     t.boolean   "mbk_import_new",                         :default => false
     t.boolean   "mbk_ready_to_import",                    :default => false
     t.timestamp "mbk_updated_at",                                            :null => false
     t.datetime  "mbk_created_at"
   end
+
+  add_index "vm_merged_products", ["v_productcode"], :name => "v_productcode"
 
 end

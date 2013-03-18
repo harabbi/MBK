@@ -9,6 +9,17 @@ class ApplicationController < ActionController::Base
 
   protect_from_forgery
   def home
+    if params[:attr_name] and params[:attr_pass]
+      @new_attr = MbkAttribute.new :name => params[:attr_name]
+      if params[:attr_pass] == "shaneATTRp@55"
+        @new_attr.save
+      else
+        @status = "Wrong Password"
+      end
+    else
+      @new_attr = MbkAttribute.new
+    end
+
     if params[:search_id]
       @product_search = ProductSearch.find_by_id(params[:search_id]) || ProductSearch.new
       render :partial => 'search_form'
@@ -20,7 +31,7 @@ class ApplicationController < ActionController::Base
   def search
     if request.method == "POST"
       if params[:commit] == "Search without Save"
-        @product_search = ( ProductSearch.find_by_id(params[:product_search][:id]) || ProductSearch.new(params[:product_search]) )
+        @product_search = ProductSearch.new(params[:product_search])
       elsif params[:commit] == "Save New Search"
         @product_search = ProductSearch.new(params[:product_search])
         @product_search.save!
@@ -30,6 +41,11 @@ class ApplicationController < ActionController::Base
       end
 
       @products = @product_search.search_results
+
+      if @products.count > 1000
+        @status = "Your search rendered more than 1000 products.  Please try something a little smaller..."
+        render 'home'
+      end
 
     else
       render 'bad_page'
@@ -139,15 +155,26 @@ class ApplicationController < ActionController::Base
     render "results"
   end
 
+  def change_preview
+    @product = Product.find_by_v_productcode(params[:productcode])
+    @filename = "public/uploads/#{Time.now.to_i.to_s}.jpg"
+
+    if params[:image].blank? or params[:image].path.blank?
+      @status = "You didn't supply an image!"
+    else
+      image = Magick::Image.read(params[:image].path).first
+      image.write(@filename)
+    end
+  end
+
   def change_image
     @product = Product.find_by_v_productcode(params[:productcode])
 
     if request.method == "POST"
-      @status ||= ""
 
-      # Make sure the image is a jpg
-      image = Magick::Image.read(params[:image].path).first
-      image.write('/tmp/temp.jpg')
+      filename = params[:temp_filename]
+      image = Magick::Image.read(filename).first
+      @status ||= ""
 
       #MBK Image Upload
       Net::SSH.start(MBK_MAGENTO_SSH_HOST, MBK_MAGENTO_SSH_USER, :password => MBK_MAGENTO_SSH_PASS) do |ssh|
@@ -155,7 +182,7 @@ class ApplicationController < ActionController::Base
           ssh.exec!("mkdir -p #{@product.mbk_image_dir}")
           Net::SCP.start(MBK_MAGENTO_SSH_HOST, MBK_MAGENTO_SSH_USER, :password => MBK_MAGENTO_SSH_PASS) do |scp|
             begin
-              scp.upload!('/tmp/temp.jpg', @product.mbk_image_uri)
+              scp.upload!(filename, @product.mbk_image_uri)
               @status << "Grand River: Oh... that looks good!\n"
             rescue
               mbklogerr(__FILE__, "unseccessful image download with error: #{$!}")
@@ -176,30 +203,33 @@ class ApplicationController < ActionController::Base
           ftp.chdir('vspfiles/photos')
 
           # pure file
-          ftp.putbinaryfile('/tmp/temp.jpg', @product.v_image_name("2"))
+          ftp.putbinaryfile(filename, @product.v_image_name("2"))
 
           # width = 150px 
           image_w150 = image.resize_to_fit(150, 150)
-          image_w150.write('/tmp/temp.jpg')
-          ftp.putbinaryfile('/tmp/temp.jpg', @product.v_image_name("1"))
-          ftp.putbinaryfile('/tmp/temp.jpg', @product.v_image_name("0"))
-          ftp.putbinaryfile('/tmp/temp.jpg', @product.v_image_name("2T"))
+          image_w150.write(filename.sub('.jpg', '-w150.jpg'))
+          ftp.putbinaryfile(filename.sub('.jpg', '-w150.jpg'), @product.v_image_name("0"))
+          ftp.putbinaryfile(filename.sub('.jpg', '-w150.jpg'), @product.v_image_name("1"))
+          ftp.putbinaryfile(filename.sub('.jpg', '-w150.jpg'), @product.v_image_name("2T"))
 
           # height = 25px
           image_h25 = image.resize_to_fit(25, 25)
-          image_h25.write('/tmp/temp.jpg')
-          ftp.putbinaryfile('/tmp/temp.jpg', @product.v_image_name("2S"))
+          image_h25.write(filename.sub('.jpg', '-h25.jpg'))
+          ftp.putbinaryfile(filename.sub('.jpg', '-h25.jpg'), @product.v_image_name("2S"))
 
           # width = 50px
           image_w50 = image.resize_to_fit(50, 50)
-          image_w50.write('/tmp/temp.jpg')
-          ftp.putbinaryfile('/tmp/temp.jpg', @product.v_image_name("2t_mobile").downcase)
+          image_w50.write(filename.sub('.jpg', '-w50.jpg'))
+          ftp.putbinaryfile(filename.sub('.jpg', '-w50.jpg'), @product.v_image_name("2t_mobile").downcase)
           @status << "Volusion: That's a nice photo.\n"
         rescue
           @status << "Volusion: Login failed\n"
         end
       end
     end
+
+    #TODO
+    #rm filename.sub('.jpg', '*.jpg')
   end
 
   def reindex_magento

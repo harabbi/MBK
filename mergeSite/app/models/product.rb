@@ -4,7 +4,7 @@ class Product < ActiveRecord::Base
   self.table_name= "vm_merged_products"
   self.primary_key= "m_mbk_product_code"
 
-  has_one :attribute_set
+  has_many :product_attributes #TODO swl_finder
 
   validate :product_code_format
   
@@ -67,10 +67,6 @@ class Product < ActiveRecord::Base
 
   def v_image_name(size)
     "#{v_productcode}-#{size}.jpg".gsub(' ', '%20')
-  end
-
-  def v_image_exists?
-    Net::HTTP.get_response(URI.parse(v_image_uri)).code == "200"
   end
 
   def v_product_path

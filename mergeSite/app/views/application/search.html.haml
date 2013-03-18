@@ -79,13 +79,12 @@
       -@products.each do |product|
         %tr.preview_table_row
           %td.preview_table_cell{:style => "width: 100px;"}
-            -if product.v_image_exists?
-              =image_tag("#{product.v_image_uri}", :width=>"100px")
-            =link_to 'Change Image', image_path(product)
+            =image_tag("#{product.v_image_uri}", :width=>"100px")
+            =link_to 'Change Image', image_path(product), :target => '_blank'
           %td.preview_table_cell
-            =link_to 'V', product.v_product_path
+            =link_to 'V', product.v_product_path, :target => '_blank'
             =" - "
-            =link_to 'M', product.mbk_product_path
+            =link_to 'M', product.mbk_product_path, :target => '_blank'
           -Product.preview_attributes.each do |attr|
             %td.preview_table_cell{:class => "#{'long_cell' if Product.long_attributes.include? attr}" +      |
               "#{'short_cell' if Product.short_attributes.include? attr}"}                                   |

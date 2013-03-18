@@ -1,6 +1,9 @@
 %h2{:style => "padding-left: 10px;"}
   Products Export
 
+%h3
+  =@status
+
   %h4
     ="Pick a saved search or "
     =select "search", "search_id", ProductSearch.all.collect{ |s| [ s.search_name, s.id ] },

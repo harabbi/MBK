@@ -1,0 +1,32 @@
+%div{ :style => "text-align: center;" }
+  %h2
+    ="Uploading an image for #{@product.v_productcode} (preview):"
+  %h3
+    %i
+      =@status
+
+  %div
+    -if !@status.blank? and @status.include? "You didn't supply an image!"
+      <META HTTP-EQUIV="refresh" CONTENT="3;URL=#{image_path(@product)}">
+
+    -else
+      %div
+        %h3 Current Image (Old)
+        =image_tag("#{@product.v_image_uri}", :height=>"200px", :style => "margin: 30px;")
+
+        %h3 Pending Image (New)
+        %div{ :style => "margin: 30px;" }
+          <img src="#{@filename.sub('public/','')}" height="200px" alt="#{@filename.sub('public/','')}" />
+
+  %div{ :style => "padding: 20px 0;" }
+    Product links:
+    =link_to 'Volusion', @product.v_product_path, :target => '_blank'
+    =" "
+    =link_to 'Grand River', @product.mbk_product_path, :target => '_blank'
+
+  =form_tag image_path(@product), :multipart => true do
+    %div
+      =hidden_field_tag :temp_filename, @filename
+      =submit_tag 'Confirm Image'
+      =link_to "Pick a Different Image", image_path(@product)
+      =link_to "Return Home", '/'
