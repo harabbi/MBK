@@ -57,9 +57,9 @@
           %tr
             -attrs.each do |attr|
               %td
-                =check_box_tag "optional_attributes[]", attr.name.camelize
+                =check_box_tag "optional_attributes[]", attr.name
               %td{ :style => "text-align: left; padding-left: 10px;" }
-                =attr.name
+                =attr.name.camelize
       %div{ :style => "padding-top: 50px;" }
         =f.submit "Download XLS", :onclick => "$('#dialog-form').dialog('close')"
         =button_to_function "Cancel", "$('#dialog-form').dialog('close')"
