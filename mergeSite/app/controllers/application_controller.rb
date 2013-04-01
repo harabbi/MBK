@@ -127,7 +127,9 @@ class ApplicationController < ActionController::Base
                 product_obj.send( (attr_key + "="), attr_value )
               end
             rescue(NoMethodError)
-              @errors.push("#{attr_key} is not an allowed column name.") unless @errors.include?("#{attr_key} is not an allowed column name.")
+              unless @errors.include?("#{attr_key} is not an allowed column name.")
+                @errors.push("#{attr_key} is not an allowed column name.")
+              end
             end
           end
         end
@@ -138,9 +140,9 @@ class ApplicationController < ActionController::Base
 
         elsif product_obj.changed?
           product_obj.mbk_import_update = true
-          changed_attrs = product_obj.attribute_names.select do |attr|
+          changed_attrs = (product_obj.attribute_names + MbkAttribute.all.map(&:name)).select do |attr|
             !['mbk_import_update', 'mbk_import_new'].include? attr and product_obj.send(attr + '_changed?')
-          end.join(',').gsub('v_', '')
+          end.map(&:camelize).join(',').gsub('v_', '')
 
           @updated_products.push [ product_obj, changed_attrs ]
 

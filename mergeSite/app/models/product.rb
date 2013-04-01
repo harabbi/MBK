@@ -28,6 +28,10 @@ class Product < ActiveRecord::Base
     end
   end
 
+  def changed?
+    self.product_attributes.any?(&:changed?) || super
+  end
+
   #def product_code_format
     #if self.v_productcode.match(/[A-Z]{3}-[0-9]{3}-[0-9]{3}/).nil?
       #errors.add :v_productcode, "must be AAA-###-###"
