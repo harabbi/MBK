@@ -38,6 +38,14 @@ $(document).ready(function(){
   $('#product_search_search_name').live('change', function() {
     $('#save_and_search').show();
   });
+
+  $( "#dialog-form" ).dialog({
+    autoOpen: false,
+    height: 500,
+    modal: true,
+    position: { my: "center", at: "center", of: window },
+    title: ""
+  });
 });
 
 function start_spinner() {

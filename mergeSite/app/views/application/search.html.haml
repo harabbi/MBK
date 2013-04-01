@@ -44,19 +44,32 @@
     ="."
   
 -else
-  =form_for @product_search, :url => download_path, :method => :get do |f|
-    -if @product_search.id
-      =hidden_field_tag "search_id", @product_search.id
-    -else
-      -@product_search.attributes.each do |key, value|
-        =hidden_field_tag "product_search[#{key}]", value unless value.blank? or @product_search.id
-    %p
-      ="Your search returned #{@products.count} results."
-    %p
-      =f.submit "Download XLS"
-      ="or click "
-      =link_to "here", root_path
-      =" to return to the Home page."
+  #dialog-form{ :style => "display: none;" }
+    =form_for @product_search, :url => download_path, :method => :get do |f|
+      -if @product_search.id
+        =hidden_field_tag "search_id", @product_search.id
+      -else
+        -@product_search.attributes.each do |key, value|
+          =hidden_field_tag "product_search[#{key}]", value unless value.blank? or @product_search.id
+
+      %table{ :style => "width: 100%;" }
+        -MbkAttribute.all.each_slice(2) do |attrs|
+          %tr
+            -attrs.each do |attr|
+              %td
+                =check_box_tag "optional_attributes[]", attr.name
+              %td{ :style => "text-align: left; padding-left: 10px;" }
+                =attr.name
+      %div{ :style => "padding-top: 50px;" }
+        =f.submit "Download XLS", :onclick => "$('#dialog-form').dialog('close')"
+        =button_to_function "Cancel", "$('#dialog-form').dialog('close')"
+
+  %p
+    ="Your search returned #{@products.count} results."
+    =link_to_function "Download XLS", "$('#dialog-form').dialog('open')"
+    ="or click "
+    =link_to "here", root_path
+    =" to return to the Home page."
 
   %table.preview_search_table
     %thead

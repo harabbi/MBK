@@ -34,7 +34,7 @@
                     %tr
                       -product_attrs.each do |product_attr|
                         %td{ :style => "width: 100%;" }
-                          =product_attr.titleize 
+                          =product_attr.camelize 
               %div{ :style => "vertical-align: bottom; padding: 10px; text-align: center;" }
                 =form_tag root_path do
                   New: 

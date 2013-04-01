@@ -10,7 +10,7 @@ class ApplicationController < ActionController::Base
   protect_from_forgery
   def home
     if params[:attr_name] and params[:attr_pass]
-      @new_attr = MbkAttribute.new :name => params[:attr_name]
+      @new_attr = MbkAttribute.new :name => params[:attr_name].downcase.gsub(/\s/,'_')
       if params[:attr_pass] == "shaneATTRp@55"
         @new_attr.save
       else
@@ -63,92 +63,103 @@ class ApplicationController < ActionController::Base
     else
       @product_search = ProductSearch.new(params[:product_search])
     end
-    send_data @product_search.search_results.to_xls(:columns => Product.xls_attributes,
-                                                    :headers => Product.xls_attributes.collect{|attr| attr.gsub("v_", "").camelize}),
-                                                    :filename => "products.xls"
+    send_data @product_search.search_results.to_xls(:columns => (Product.xls_attributes + Array.wrap(params[:optional_attributes])),
+              :headers => (Product.xls_attributes + Array.wrap(params[:optional_attributes])).collect{|attr| attr.gsub("v_", "").camelize}),
+              :filename => "products.xls"
   end
 
   def upload
     @errors = []
     uploaded_io = params[:file]
-    filename = Rails.root.join('public', 'uploads', uploaded_io.original_filename)
-    File.open(filename, 'w') do |file|
-      file.write(uploaded_io.read.force_encoding("UTF-8"))
-    end
-    sheet = Spreadsheet.open(filename).worksheet(0)
+    if uploaded_io.nil?
+      @errors.push "No file!"
+    else
+      filename = Rails.root.join('public', 'uploads', uploaded_io.original_filename)
+      File.open(filename, 'w') do |file|
+        file.write(uploaded_io.read.force_encoding("UTF-8"))
+      end
+      sheet = Spreadsheet.open(filename).worksheet(0)
 
-    column_headers = {}
-    sheet.column_count.times do |col|
-      column_headers[ sheet.cell(0, col).to_sym ] = ""
-    end
-
-    products = {}
-    (1...sheet.row_count).each do |row|
-      product = column_headers.clone
-      column_headers.keys.each_with_index do |col_name, col_index|
-        product[ col_name.to_sym ] = sheet.cell(row, col_index)
+      column_headers = {}
+      sheet.column_count.times do |col|
+        column_headers[ sheet.cell(0, col).to_sym ] = ""
       end
 
-      product_code = product.delete(:Productcode).gsub('"', '').to_sym 
-      if products[ product_code ].blank?
-        products[ product_code ] = product
-      else
-        @errors.push "The file you uploaded has a duplicate Productcode for #{product_code}. Go back an upload a valid file."
-      end
-    end
+      products = {}
+      (1...sheet.row_count).each do |row|
+        product = column_headers.clone
+        column_headers.keys.each_with_index do |col_name, col_index|
+          product[ col_name.to_sym ] = sheet.cell(row, col_index)
+        end
 
-    @new_products = [] 
-    @updated_products = [] 
-    @unchanged_products = []
-
-    products.each do |product_code, product|
-
-      product_obj = ( Product.find_by_v_productcode(product_code.to_s) || Product.new(:v_productcode => product_code) )
-
-      product.each do |attr_key, attr_value|
-        # Change the attr_key from search object to product object format
-        attr_key = ("v_" + attr_key.to_s.underscore).to_sym
-
-        # Update the value if it's different
-        if attr_key == :v_stockstatus
-          xls_delta = attr_value - product_obj[attr_key]
-          v_delta = get_v_stockstatus(product_code) || 0
-
-          unless ( xls_delta + v_delta ) == 0
-            product_obj[attr_key] = ( product_obj[attr_key] + xls_delta + v_delta )
-          end
+        product_code = product.delete(:Productcode).gsub('"', '').to_sym 
+        if products[ product_code ].blank?
+          products[ product_code ] = product
         else
-          product_obj[attr_key] = attr_value unless product_obj[attr_key] == attr_value
+          @errors.push "The file you uploaded has a duplicate Productcode for #{product_code}. Go back an upload a valid file."
         end
       end
 
-      if product_obj.new_record?
-        product_obj.mbk_import_new = true
-        @new_products.push product_obj
+      @new_products = [] 
+      @updated_products = [] 
+      @unchanged_products = []
 
-      elsif product_obj.changed?
-        product_obj.mbk_import_update = true
-        changed_attrs = product_obj.attribute_names.select do |attr|
-          !['mbk_import_update', 'mbk_import_new'].include? attr and product_obj.send(attr + '_changed?')
-        end.join(',').gsub('v_', '')
+      products.each do |product_code, product|
 
-        @updated_products.push [ product_obj, changed_attrs ]
+        product_obj = ( Product.find_by_v_productcode(product_code.to_s) || Product.new(:v_productcode => product_code) )
 
-      else
-        @unchanged_products.push product_obj
-      end
+        product.each do |attr_key, attr_value|
+          # Change the attr_key from search object to product object format unless mbk_attribute name
+          attr_key = attr_key.to_s.underscore
+          attr_key = ("v_" + attr_key.to_s) unless MbkAttribute.all.map(&:name).include?(attr_key)
 
-      # Validate the object
-      @errors.push "#{product_code} did not pass validation: #{product_obj.errors.full_messages.join(", ")}" unless product_obj.valid?
-    end 
+          # Update the value if it's different
+          if attr_key == "v_stockstatus"
+            xls_delta = attr_value - product_obj.v_stockstatus
+            v_delta = get_v_stockstatus(product_code) || 0
 
-    if @errors.empty?
-      @new_products.each do |product|
-        product.save!
-      end
+            unless ( xls_delta + v_delta ) == 0
+              product_obj.v_stockstatus = (product_obj.send(attr_key) + xls_delta + v_delta)
+            end
+          else
+            begin
+              unless product_obj.send(attr_key) == attr_value
+                product_obj.send( (attr_key + "="), attr_value )
+              end
+            rescue(NoMethodError)
+              @errors.push("#{attr_key} is not an allowed column name.") unless @errors.include?("#{attr_key} is not an allowed column name.")
+            end
+          end
+        end
 
-      @updated_products.each do |product, nevermind|
-        product.save!
+        if product_obj.new_record?
+          product_obj.mbk_import_new = true
+          @new_products.push product_obj
+
+        elsif product_obj.changed?
+          product_obj.mbk_import_update = true
+          changed_attrs = product_obj.attribute_names.select do |attr|
+            !['mbk_import_update', 'mbk_import_new'].include? attr and product_obj.send(attr + '_changed?')
+          end.join(',').gsub('v_', '')
+
+          @updated_products.push [ product_obj, changed_attrs ]
+
+        else
+          @unchanged_products.push product_obj
+        end
+
+        # Validate the object
+        @errors.push "#{product_code} did not pass validation: #{product_obj.errors.full_messages.join(", ")}" unless product_obj.valid?
+      end 
+
+      if @errors.empty?
+        @new_products.each do |product|
+          product.save!
+        end
+
+        @updated_products.each do |product, nevermind|
+          product.save!
+        end
       end
     end
 
@@ -257,6 +268,12 @@ class ApplicationController < ActionController::Base
 
     uri.query = URI.encode_www_form(params)
 
-    Net::HTTP.get(uri).match(/Stock.*\d+/)[0].sub(/.*>/,'').to_i
+    response = Net::HTTP.get(uri)
+
+    if (stock_line_match = response.match(/Stock.*\d+/)).nil?
+      puts response
+    else
+      stock_line_match[0].sub(/.*>/,'').to_i
+    end
   end
 end

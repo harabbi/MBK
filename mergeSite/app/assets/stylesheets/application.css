@@ -5,6 +5,23 @@
 p {
   padding-left: 10px;
 }
+.ui-dialog {
+  background: #FFF;
+  border: 3px solid #000;
+  min-width: 400px;
+  padding: 10px;
+  text-align: center;
+}
+.ui-dialog-title {
+  font-size: 20px;
+  font-weight: bold;
+}
+.ui-dialog-titlebar-close {
+  display: none;
+}
+.ui-dialog-content {
+  padding: 20px;
+}
 #header, #search_box, #preview_box {
   width: 100%;
   margin: auto;

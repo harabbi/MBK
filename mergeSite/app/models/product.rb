@@ -2,17 +2,37 @@ class Product < ActiveRecord::Base
   require 'net/http'
 
   self.table_name= "vm_merged_products"
-  self.primary_key= "m_mbk_product_code"
+  self.primary_key= "v_productcode"
 
-  has_many :product_attributes #TODO swl_finder
+  has_many :product_attributes, :finder_sql => Proc.new{"SELECT * FROM `product_attributes` WHERE `v_productcode` = '#{self.v_productcode}'"},
+                                :foreign_key => "v_productcode", :autosave => true
 
-  validate :product_code_format
+  #validate :product_code_format
   
-  def product_code_format
-    if self.v_productcode.match(/[A-Z]{3}-[0-9]{3}-[0-9]{3}/).nil? and false #TODO
-      errors.add :v_productcode, "must be AAA-###-###"
+  def method_missing(name, *args, &block)
+    if MbkAttribute.all.map(&:name).include?(name.to_s.sub(/=$/,'').sub(/_changed\?$/,''))
+      if name.to_s.match(/=$/).nil?
+        attr = self.product_attributes.detect{|attr| attr.mbk_attribute_name == name.to_s.sub(/_changed\?$/,'')}
+        if name.to_s.match(/_changed?/).nil?
+          attr.try(:mbk_attribute_value)
+        else
+          attr.try(:changed?)
+        end
+      else
+        attr = ( self.product_attributes.detect {|attr| attr.mbk_attribute_name == name.to_s.sub(/=$/,'')} ||
+                 self.product_attributes.new(:v_productcode => self.v_productcode, :mbk_attribute_name => name.to_s.sub(/=$/,'')) )
+        attr.mbk_attribute_value=(args.first)
+      end
+    else
+      super(name, *args, &block)
     end
   end
+
+  #def product_code_format
+    #if self.v_productcode.match(/[A-Z]{3}-[0-9]{3}-[0-9]{3}/).nil?
+      #errors.add :v_productcode, "must be AAA-###-###"
+    #end
+  #end
 
   def self.price_attributes
     self.attribute_names.select do |attr|
