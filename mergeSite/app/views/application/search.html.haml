@@ -45,6 +45,9 @@
   
 -else
   #dialog-form{ :style => "display: none;" }
+    %h4
+      Preselected attributes have at least<BR>
+      one product with that attribute.
     =form_for @product_search, :url => download_path, :method => :get do |f|
       -if @product_search.id
         =hidden_field_tag "search_id", @product_search.id
@@ -57,7 +60,7 @@
           %tr
             -attrs.each do |attr|
               %td
-                =check_box_tag "optional_attributes[]", attr.name
+                =check_box_tag "optional_attributes[]", attr.name, @preselected_optional_columns.include?(attr.name)
               %td{ :style => "text-align: left; padding-left: 10px;" }
                 =attr.name.camelize
       %div{ :style => "padding-top: 50px;" }

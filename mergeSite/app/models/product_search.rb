@@ -51,6 +51,6 @@ class ProductSearch < ActiveRecord::Base
       search_strings.push "`v_#{attr_string}` < #{self.send(attr_sym)}" unless self.send(attr_sym).blank?
     end
 
-  @results = Product.where( search_strings.join(' AND ') )
+    @results = Product.where( search_strings.join(' AND ') )
   end
 end
