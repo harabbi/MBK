@@ -44,13 +44,8 @@ class ApplicationController < ActionController::Base
         @product_search.update_attributes(params[:product_search])
       end
 
-      @products = @product_search.search_results
+      @products = @product_search.search_results.first(1000)
       @preselected_optional_columns = @products.map{|p| p.product_attributes.map(&:mbk_attribute_name).uniq}.flatten.uniq 
-
-      if @products.count > 1000
-        @status = "Your search rendered more than 1000 products.  Please try something a little smaller..."
-        render 'home'
-      end
 
     else
       render 'bad_page'
