@@ -69,7 +69,10 @@
         =button_to_function "Cancel", "$('#dialog-form').dialog('close')"
 
   %p
-    ="Your search returned #{@products.count} results."
+    ="Your search returned #{@product_count} results"
+    -if @product_count > @products.count
+      =" (only the first #{@products.count} are displayed in this preview, all will be in the XLS)"
+    ="."
     =link_to_function "Download XLS", "$('#dialog-form').dialog('open')"
     ="or click "
     =link_to "here", root_path

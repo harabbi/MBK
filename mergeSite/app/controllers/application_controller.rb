@@ -44,7 +44,9 @@ class ApplicationController < ActionController::Base
         @product_search.update_attributes(params[:product_search])
       end
 
-      @products = @product_search.search_results.first(1000)
+      @products = @product_search.search_results
+      @product_count = @products.count
+      @products = @products.first(500)
       @preselected_optional_columns = @products.map{|p| p.product_attributes.map(&:mbk_attribute_name).uniq}.flatten.uniq 
 
     else
