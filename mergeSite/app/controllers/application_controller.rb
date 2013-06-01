@@ -67,7 +67,7 @@ class ApplicationController < ActionController::Base
     end
     send_data @product_search.search_results.to_xls(:columns => (Product.xls_attributes + Array.wrap(params[:optional_attributes])),
               :headers => (Product.xls_attributes + Array.wrap(params[:optional_attributes])).collect{|attr| attr.gsub("v_", "").camelize}),
-              :filename => (@product_search.search_name || "products.xls")
+              :filename => (@product_search.search_name || "products") + ".xls"
   end
 
   def upload
