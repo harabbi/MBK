@@ -36,12 +36,12 @@ begin
   r3.each() { |id|
    $con.execute("insert into `vm_merged`.`vm_merged_products` (select * from #{export_db}.vm_merged_products where v_productcode='#{id}')")
    $con.execute("update `vm_merged`.`vm_merged_products` set mbk_import_new=1 where v_productcode='#{id}'")
-   $con.execute("delete from `#{export_db}`.`vm_merged_products` where v_productcode='#{id}'")
+   #$con.execute("delete from `#{export_db}`.`vm_merged_products` where v_productcode='#{id}'")
   }
   r5=(r2-r1)
   #delete  items that may have gone out of stock between last update
   r5.each() { |id|
-    $con.execute("delete from `vm_merged`.`vm_merged_products` where v_productcode='#{id}'")
+    #$con.execute("delete from `vm_merged`.`vm_merged_products` where v_productcode='#{id}'")
   }
 rescue
   mbklogerr(__FILE__, "unseccessful checking for new products #{$!}")

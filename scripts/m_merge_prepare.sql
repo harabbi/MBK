@@ -1,6 +1,6 @@
 update `vm_merged`.`vm_merged_products` set `m_price` = `v_productprice`;
 update `vm_merged`.`vm_merged_products` set `m_mbk_retail_price` = `v_listprice`;
-update `vm_merged`.`vm_merged_products` set `m_category_ids` = `v_categoryids`;
+update `vm_merged`.`vm_merged_products` set `m_category_ids` = (select `category_map`.`m_name` from `mbk`.`category_map` where `category_map`.`v_id`=`vm_merged_products`.`v_categoryid`);
 update `vm_merged`.`vm_merged_products` set `m_sku` = `v_productcode`;
 update `vm_merged`.`vm_merged_products` set `m_mbk_product_code` = `v_productcode`;
 update `vm_merged`.`vm_merged_products` set `m_name` = `v_productname`;

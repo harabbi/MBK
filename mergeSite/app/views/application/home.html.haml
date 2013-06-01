@@ -5,15 +5,40 @@
 #search_box
   %table.search_table
     %tr
-      %td{:style => "border: 2px solid #000;"}
-        %h2{:style => "padding-left: 10px;"}
-          Product/Customer Import
-        =form_tag upload_path, :method => :put, :multipart => true do
-          %p
-            =file_field_tag 'file', :size => 60
-            =submit_tag "Upload"
-
-    %tr
-<<<<<<< Updated upstream
-      %td{:style => "border: 2px solid #000; padding-bottom: 20px;", :id => "search_form"}
+      %td{:style => "border: 2px solid #000;", :id => "search_form"}
         =render :partial => 'search_form'
+
+      %td
+        %table.search_table
+          %tr
+            %td{:style => "border: 2px solid #000; vertical-align: top; height: 100px;"}
+              %h2{:style => "padding-left: 10px;"}
+                Product/Customer Import
+              =form_tag upload_path, :method => :put, :multipart => true do
+                %p
+                  =file_field_tag 'file', :size => 60
+                  =submit_tag "Upload"
+
+          %tr
+            %td{:style => "border: 2px solid #000;", :id => "attr_form"}
+              %div{ :style => "vertical-align: top;" }
+                %h2{:style => "padding-left: 10px;"}
+                  Magento / Grand River Attributes
+                %h3
+                  %center
+                    =@new_attr.errors.full_messages.join(',')
+                    =@status
+              %div{ :style => "min-height: 160px; text-align: center;" }
+                %table{ :style => "table-layout: fixed; width: 550px;" }
+                  -MbkAttribute.all.map(&:name).each_slice(3) do |product_attrs|
+                    %tr
+                      -product_attrs.each do |product_attr|
+                        %td{ :style => "width: 100%;" }
+                          =product_attr.camelize 
+              %div{ :style => "vertical-align: bottom; padding: 10px; text-align: center;" }
+                =form_tag root_path do
+                  New: 
+                  =text_field_tag :attr_name
+                  Shane's Password: 
+                  =password_field_tag :attr_pass
+                  =submit_tag 'Add'

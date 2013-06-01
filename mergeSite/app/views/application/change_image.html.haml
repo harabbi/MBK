@@ -1,0 +1,26 @@
+%div{ :style => "text-align: center;" }
+  %h2
+    ="Upload an image for #{@product.v_productcode}:"
+  %h3
+    %i
+      =@status
+  %div
+    -if @status and @status.include?("Grand River: Oh... that looks good!")
+      =link_to "Click here", reindex_path(@product)
+      =" to reindex Magento's Images (this can take a few minutes, so wait if you have more images to upload)."
+
+  %div
+    =image_tag("#{@product.v_image_uri}", :height=>"200px", :style => "margin: 30px;")
+
+  %div{ :style => "padding: 20px 0;" }
+    Product links:
+    =link_to 'Volusion', @product.v_product_path, :target => '_blank'
+    =" "
+    =link_to 'Grand River', @product.mbk_product_path, :target => '_blank'
+
+  =form_tag preview_path, :multipart => true do
+    %div
+      =hidden_field_tag :productcode, @product.v_productcode
+      =file_field_tag :image
+      =submit_tag 'Submit'
+      =link_to "Return Home", '/'

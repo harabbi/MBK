@@ -31,15 +31,22 @@ findex = "1"
 ["new", "update"].each() { |t|
   cols = get_db_columns(export_db, "m_products").keys.to_a
   5.times() { |i| cols.pop }
+  attr_cols = Array.new
+  $con.execute("select distinct a.mbk_attribute_name as colname from #{export_db}.m_products as m inner join vm_merged.product_attributes as a on m.sku=a.v_productcode  where m.mbk_import_#{t}=1").each() { |r| attr_cols.push(r[0].to_s) }
+  cols << attr_cols
   f = File.open("/tmp/products_#{t}_#{Time.now.to_i}_#{findex}.csv",'w')
   f.write("#{cols.join(",")}\n")
+  
   $con.execute("SELECT * FROM #{export_db}.m_products where mbk_import_#{t}=1").each() { |r|
+    attrs = Hash.new
+    $con2.execute("select mbk_attribute_name, mbk_attribute_value from vm_merged.product_attributes where v_productcode='#{r[0].to_s}' and mbk_attribute_name in ('#{attr_cols.join("','")}')").each() { |kv| attrs[kv[0].to_s] = kv[1].to_s }    
+
     rf = Array.new
     o = ""
     r.each() { |rr| rf.push(rr) }
     5.times() { |i| rf.pop }
     4.times() { |i| rf.pop } if rf.last.blank?
-   
+
     rf.each() { |rr| 
       if rr.blank?
         o << ","
@@ -53,6 +60,15 @@ findex = "1"
         end
       end
     }
+    
+    attr_cols.each() { |c|
+      unless attrs[c].nil?
+        o << "\"#{attrs[c]}\"," 
+      else
+        o << ","
+      end 
+    }
+
     f.write("#{o.chomp(",")}\n")
     
     cnt.next!

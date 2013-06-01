@@ -24,6 +24,7 @@ round(discountedprice_level1,2)  as `v_discountedprice_level1`,
 round(discountedprice_level3,2)  as `v_discountedprice_level3`,
 yahoo_category          as `v_yahoo_category`,
 displaybegindate        as `v_displaybegindate`,
+round(vendor_price,2)            as `v_vendor_price`,
 round(productprice,2)   as `m_price`,
 round(listprice ,2)     as `m_mbk_retail_price`,
 categoryids             as `m_category_ids`,
@@ -45,6 +46,7 @@ stocklowqtyalarm        as `m_notify_stock_qty`,
 maxqty                  as `m_max_sale_qty`,
 IF(howtogetsaleprice='addtocart',round(saleprice,2),NULL) as `m_mbk_map_price`,
 round(discountedprice_level3,2)  as `m__tier_price_price`,
+round(vendor_price,2)            as `m_cost`,
 0,
 0,
 0,
@@ -55,18 +57,6 @@ from Products_Joined );
 delete from `vm_merged_products` where `v_stockstatus` < 1;
 delete from `vm_merged_products` where `v_categoryid` = 0;
 update `vm_merged_products`,`mbk`.`category_map` set `vm_merged_products`.m_category_ids = (select `category_map`.`m_name` from `mbk`.`category_map` where `category_map`.`v_id`=`vm_merged_products`.`v_categoryid`);
-update vm_merged_products set v_productname = replace(v_productname,'\\','');
-update vm_merged_products set v_productdescription = replace(v_productdescription,'\\','');
-update vm_merged_products set v_productdescriptionshort = replace(v_productdescriptionshort,'\\','');
-update vm_merged_products set v_productfeatures = replace(v_productfeatures,'\\','');
-update vm_merged_products set v_metatag_title = replace(v_metatag_title,'\\','');
-update vm_merged_products set v_metatag_description = replace(v_metatag_description,'\\','');
 
-update vm_merged_products set m_name = replace(m_name,'\\','');
-update vm_merged_products set m_description = replace(m_description,'\\','');
-update vm_merged_products set m_short_description = replace(m_short_description,'\\','');
-update vm_merged_products set m_mbk_features_area = replace(m_mbk_features_area,'\\','');
-update vm_merged_products set m_meta_title = replace(m_meta_title,'\\','');
-update vm_merged_products set m_meta_description = replace(m_meta_description,'\\','');
-
-
+ALTER TABLE `vm_merged_products` MODIFY `v_productcode` VARCHAR(255);
+ALTER TABLE `vm_merged_products` ADD INDEX `v_productcode` (`v_productcode`);

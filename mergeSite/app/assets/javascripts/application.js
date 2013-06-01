@@ -38,19 +38,27 @@ $(document).ready(function(){
   $('#product_search_search_name').live('change', function() {
     $('#save_and_search').show();
   });
+
+  $( "#dialog-form" ).dialog({
+    autoOpen: false,
+    height: 500,
+    modal: true,
+    position: { my: "center", at: "center", of: window },
+    title: ""
+  });
 });
 
 function start_spinner() {
   console.log('starting...');
   var opts = {
     lines: 12, // The number of lines to draw
-    length: 120, // The length of each line
-    width: 40, // The line thickness
-    radius: 55, // The radius of the inner circle
+    length: 135, // The length of each line
+    width: 33, // The line thickness
+    radius: 60, // The radius of the inner circle
     corners: 1, // Corner roundness (0..1)
     rotate: 0, // The rotation offset
     color: '#888', // #rgb or #rrggbb
-    speed: 0.8, // Rounds per second
+    speed: 0.7, // Rounds per second
     trail: 60, // Afterglow percentage
     shadow: true, // Whether to render a shadow
     hwaccel: false, // Whether to use hardware acceleration

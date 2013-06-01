@@ -7,6 +7,8 @@ gem 'haml'
 gem 'to_xls'
 gem 'spreadsheet'
 gem 'thin'
+gem 'net-scp'
+gem 'rmagick'
 
 group :assets do
   gem 'sass-rails',   '~> 3.2.3'
