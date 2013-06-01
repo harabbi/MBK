@@ -35,6 +35,11 @@
                       -product_attrs.each do |product_attr|
                         %td{ :style => "width: 100%;" }
                           =product_attr.camelize 
+                          -if ProductAttribute.find_by_mbk_attribute_name(product_attr).nil?
+                            =form_tag root_path, :style => "display: inline;" do
+                              =hidden_field_tag :attr_name, product_attr
+                              =hidden_field_tag :delete
+                              =image_submit_tag("delete.png", :height => "20", :confirm => "ARE YOU SURE?!?!?!")
               %div{ :style => "vertical-align: bottom; padding: 10px; text-align: center;" }
                 =form_tag root_path do
                   New: 
