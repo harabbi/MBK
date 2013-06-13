@@ -29,11 +29,12 @@ begin
 cnt ="1"
 findex = "1"
 ["new", "update"].each() { |t|
+  unless $con.execute("SELECT COUNT(*) FROM #{export_db}.m_products where mbk_import_#{t}=1").first.first.to_i == 0
   cols = get_db_columns(export_db, "m_products").keys.to_a
   5.times() { |i| cols.pop }
   attr_cols = Array.new
   $con.execute("select distinct a.mbk_attribute_name as colname from #{export_db}.m_products as m inner join vm_merged.product_attributes as a on m.sku=a.v_productcode  where m.mbk_import_#{t}=1").each() { |r| attr_cols.push(r[0].to_s) }
-  cols << attr_cols
+  cols << attr_cols unless attr_cols.empty?
   f = File.open("/tmp/products_#{t}_#{Time.now.to_i}_#{findex}.csv",'w')
   f.write("#{cols.join(",")}\n")
   
@@ -48,10 +49,11 @@ findex = "1"
     4.times() { |i| rf.pop } if rf.last.blank?
 
     rf.each() { |rr| 
+#puts rr
       if rr.blank?
         o << ","
       else
-        rr.gsub!(/\"/,"'")
+        rr.gsub!(/"/,"\"\"")
         rr.gsub!(/\n/, "\\n") 
         if rr.numeric?
           o << "#{rr},"
@@ -82,6 +84,7 @@ findex = "1"
   }
   f.close 
   $con.execute("delete FROM #{export_db}.m_products where mbk_import_#{t}=1")
+  end
 }
 rescue
   puts $!

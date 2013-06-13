@@ -59,4 +59,4 @@ delete from `vm_merged_products` where `v_categoryid` = 0;
 update `vm_merged_products`,`mbk`.`category_map` set `vm_merged_products`.m_category_ids = (select `category_map`.`m_name` from `mbk`.`category_map` where `category_map`.`v_id`=`vm_merged_products`.`v_categoryid`);
 
 ALTER TABLE `vm_merged_products` MODIFY `v_productcode` VARCHAR(255);
-ALTER TABLE `vm_merged_products` ADD INDEX `v_productcode` (`v_productcode`);
+ALTER TABLE `vm_merged_products` ADD INDEX `v_productcode_index` (`v_productcode`);

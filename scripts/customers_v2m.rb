@@ -107,13 +107,14 @@ end
 a = Array.new
 Dir.glob("/tmp/customers*.csv").each() { |f| a.push(f.split("/").last) }
 a.sort.each() do |f|
+  begin
   puts "about to upload #{f}"
   Net::SCP.start(MBK_MAGENTO_HOST, MBK_MAGENTO_USER, :password => MBK_MAGENTO_PASS) do |scp|
     begin
-      #mbkloginfo(__FILE__, "uploading file #{f}")
+  #    mbkloginfo(__FILE__, "uploading file #{f}")
       scp.upload! "/tmp/#{f}", "#{MBK_MAGENTO_DATA_DIR}var/customimportexport/customers/"
     rescue
-      #mbklogerr(__FILE__, "unseccessful scp  with error: #{$!}")
+  #    mbklogerr(__FILE__, "unseccessful scp  with error: #{$!}")
       puts "unseccessful scp  with error: #{$!}"
       system("sudo mkdir -p /tmp/failed_upload")
       system("sudo mv /tmp/#{f} /tmp/failed_upload/#{f}")
@@ -124,10 +125,13 @@ a.sort.each() do |f|
   Net::SSH.start(MBK_MAGENTO_HOST, MBK_MAGENTO_USER, :password => MBK_MAGENTO_PASS) do |ssh|
     begin
       ssh.exec!("cd mbksite; php -f amartinez_customimportexport.php -- -ci #{MBK_MAGENTO_DATA_DIR}var/customimportexport/customers/#{f} 2>&1 | tee -a customers.log")
-      #mbkloginfo(__FILE__,  "php -f amartinez_customimportexport.php -- -ci #{MBK_MAGENTO_DATA_DIR}var/customimportexport/customers/#{f}")
+   #   mbkloginfo(__FILE__,  "php -f amartinez_customimportexport.php -- -ci #{MBK_MAGENTO_DATA_DIR}var/customimportexport/customers/#{f} 2>&1 | tee -a customers.log")
     rescue
-      #mbklogerr(__FILE__, "unseccessful ssh with error #{$!}")
+    #  mbklogerr(__FILE__, "unseccessful ssh with error #{$!}")
       puts "unseccessful ssh with error #{$!}"
     end
+  end
+  rescue
+    puts $!
   end
 end

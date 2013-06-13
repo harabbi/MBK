@@ -17,6 +17,7 @@ end
 mbk_app_init(__FILE__)
 mbkloginfo(__FILE__, "uploading images for file vm_merged products")
 mbk_get_all_product_codes.each() { |s| 
+  begin
   Net::SCP.start(MBK_MAGENTO_HOST, MBK_MAGENTO_USER, :password => MBK_MAGENTO_PASS) do |scp|
     begin
       mbkloginfo(__FILE__, "downloading image for #{s}")     
@@ -39,5 +40,8 @@ puts "uploading image #{s}"
     rescue
       mbklogerr(__FILE__, "unseccessful image download with error: #{$!}")
     end
+  end
+  rescue
+    mbklogerr(__FILE__, "unseccessful connection to server could not upload image #{s}")
   end
 }

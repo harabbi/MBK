@@ -69,3 +69,5 @@ begin
 rescue
   mbklogerr(__FILE__, "unseccessful checking for updated products #{$!}")  
 end
+
+mbkloginfo(__FILE__, 'Done!....')

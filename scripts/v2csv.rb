@@ -19,6 +19,7 @@ export_db = "volusion"
 begin
 cnt ="1"
 ["new", "update"].each() { |t|
+  unless $con.execute("SELECT COUNT(*) FROM #{export_db} WHERE mbk_import_#{t}=1").first.fisrt.to_i == 0
   cols  = get_db_columns(export_db, "Products_Joined").keys.to_a;                                        5.times() { |i| cols.pop }
   pcols = get_db_columns("mbk_site_export_#{Time.now.strftime("%Y%m%d")}", "Products_Joined").keys.to_a; 5.times() { |i| pcols.pop }
   
@@ -82,6 +83,7 @@ cnt ="1"
     end
     $con.execute("delete from #{export_db}.Products_Joined where productcode='#{rh["productcode"]}'")
   }
+  end
 }
 rescue
   mbklogerr(__FILE__, "unseccessful checking for new products #{$!}")  
