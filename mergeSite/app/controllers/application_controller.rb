@@ -264,7 +264,7 @@ class ApplicationController < ActionController::Base
   end
 
   private
-  def get_v_stockstatus(product_code)
+  def get_v_stockstatus(product_code, try = 0)
     begin
       uri = URI("http://www.modeltrainstuff.com/net/WebService.aspx")
       params = { :Login => "philz@modeltrainstuff.com",
@@ -282,9 +282,13 @@ class ApplicationController < ActionController::Base
         stock_line_match[0].sub(/.*>/,'').to_i
       end
     rescue => e
-      puts e.message
-      puts e.backtrace.first
-      return nil
+      if try < 5
+        get_v_stockstatus(product_code, (try + 1))
+      else
+        puts e.message
+        puts e.backtrace.first
+        return nil
+      end
     end
   end
 end
