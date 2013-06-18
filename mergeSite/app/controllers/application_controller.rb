@@ -248,9 +248,6 @@ class ApplicationController < ActionController::Base
         end
       end
     end
-
-    #TODO
-    #rm filename.sub('.jpg', '*.jpg')
   end
 
   def reindex_magento
@@ -272,13 +269,11 @@ class ApplicationController < ActionController::Base
       uri = URI("http://www.modeltrainstuff.com/net/WebService.aspx")
       params = { :Login => "philz@modeltrainstuff.com",
                  :EncryptedPassword => "75856D0BFF5EAD3E34E1C714AC07ED53A736591397D4C8F08B3F157EA85B6243",
-                 :EDI_Name => "Generic/\Products",
+                 :EDI_Name => "Generic\\Products",
                  :SELECT_Columns => "p.StockStatus",
                  :WHERE_Column => "p.ProductCode",
                  :WHERE_Value => "#{product_code}" }
-
       uri.query = URI.encode_www_form(params)
-
       response = Net::HTTP.get(uri)
 
       if (stock_line_match = response.match(/Stock.*\d+/)).nil?
