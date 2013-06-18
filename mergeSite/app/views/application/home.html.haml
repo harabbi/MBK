@@ -17,8 +17,7 @@
               =form_tag upload_path, :method => :put, :multipart => true do
                 %p
                   =file_field_tag 'file', :size => 60
-                  =submit_tag "Upload"
-
+                  =submit_tag "Upload", :onclick => 'start_spinner()'
           %tr
             %td{:style => "border: 2px solid #000;", :id => "attr_form"}
               %div{ :style => "vertical-align: top;" }

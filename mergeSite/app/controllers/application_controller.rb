@@ -41,12 +41,9 @@ class ApplicationController < ActionController::Base
       end
 
       @products = @product_search.search_results
+      @product_count = @products.count
+      @products = @products.first(500)
       @preselected_optional_columns = @products.map{|p| p.product_attributes.map(&:mbk_attribute_name).uniq}.flatten.uniq 
-
-      if @products.count > 1000
-        @status = "Your search rendered more than 1000 products.  Please try something a little smaller..."
-        render 'home'
-      end
 
     else
       render 'bad_page'
@@ -105,7 +102,8 @@ class ApplicationController < ActionController::Base
       @updated_products = [] 
       @unchanged_products = []
 
-      products.each do |product_code, product|
+      Parallel.each(products) do |product_code, product|
+        ActiveRecord::Base.connection.reconnect!
 
         product_obj = ( Product.find_by_v_productcode(product_code.to_s) || Product.new(:v_productcode => product_code) )
 
@@ -159,12 +157,14 @@ class ApplicationController < ActionController::Base
       end 
 
       if @errors.empty?
-        @new_products.each do |product|
-          product.save!
+        Parallel.each(@new_products) do |product|
+          ActiveRecord::Base.connection.reconnect!
+          product.save(validate: false)
         end
 
-        @updated_products.each do |product, nevermind|
-          product.save!
+        Parallel.each(@updated_products) do |product, nevermind|
+          ActiveRecord::Base.connection.reconnect!
+          product.save(validate: false)
         end
       end
     end
@@ -264,22 +264,28 @@ class ApplicationController < ActionController::Base
 
   private
   def get_v_stockstatus(product_code)
-    uri = URI("http://www.modeltrainstuff.com/net/WebService.aspx")
-    params = { :Login => "philz@modeltrainstuff.com",
-               :EncryptedPassword => "88AF8010F29099954CF0ECB014C8D83DD29DB0B57322B045875DD653705B89A7",
-               :EDI_Name => "Generic/\Products",
-               :SELECT_Columns => "p.StockStatus",
-               :WHERE_Column => "p.ProductCode",
-               :WHERE_Value => "#{product_code}" }
+    begin
+      uri = URI("http://www.modeltrainstuff.com/net/WebService.aspx")
+      params = { :Login => "philz@modeltrainstuff.com",
+                 :EncryptedPassword => "75856D0BFF5EAD3E34E1C714AC07ED53A736591397D4C8F08B3F157EA85B6243",
+                 :EDI_Name => "Generic/\Products",
+                 :SELECT_Columns => "p.StockStatus",
+                 :WHERE_Column => "p.ProductCode",
+                 :WHERE_Value => "#{product_code}" }
 
-    uri.query = URI.encode_www_form(params)
+      uri.query = URI.encode_www_form(params)
 
-    response = Net::HTTP.get(uri)
+      response = Net::HTTP.get(uri)
 
-    if (stock_line_match = response.match(/Stock.*\d+/)).nil?
-      puts response
-    else
-      stock_line_match[0].sub(/.*>/,'').to_i
+      if (stock_line_match = response.match(/Stock.*\d+/)).nil?
+        nil
+      else
+        stock_line_match[0].sub(/.*>/,'').to_i
+      end
+    rescue => e
+      puts e.message
+      puts e.backtrace.first
+      return nil
     end
   end
 end
