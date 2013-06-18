@@ -118,7 +118,7 @@ class ApplicationController < ActionController::Base
           # Update the value if it's different
           if attr_key == "v_stockstatus"
             xls_delta = attr_value.to_i - product_obj.v_stockstatus.to_i
-            v_delta = get_v_stockstatus(product_code) || 0
+            v_delta = ( get_v_stockstatus(product_code) || 0 )
 
             unless ( xls_delta + v_delta ) == 0
               product_obj.v_stockstatus = (product_obj.send(attr_key) + xls_delta + v_delta)
