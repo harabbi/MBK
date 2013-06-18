@@ -125,7 +125,7 @@ class ApplicationController < ActionController::Base
             v_delta = ( get_v_stockstatus(product_code) || 0 )
 
             unless ( xls_delta + v_delta ) == 0
-              product_obj.v_stockstatus = (product_obj.send(attr_key) + xls_delta + v_delta)
+              product_obj.v_stockstatus = (product_obj.send(attr_key).to_i + xls_delta + v_delta)
             end
           else
             begin
