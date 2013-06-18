@@ -110,6 +110,9 @@ class ApplicationController < ActionController::Base
         product_obj = ( Product.find_by_v_productcode(product_code.to_s) || Product.new(:v_productcode => product_code) )
 
         product.each do |attr_key, attr_value|
+          # Force the value to be a value in the event that it's a formula
+          attr_value = attr_value.value if attr_value.is_a? Spreadsheet::Formula
+
           # Change the attr_key from search object to product object format unless mbk_attribute name
           attr_key = attr_key.to_s.underscore
           attr_key = ("v_" + attr_key.to_s) unless MbkAttribute.all.map(&:name).include?(attr_key)
