@@ -1,4 +1,5 @@
 %h2
+  =link_to image_tag("Home.png", :size => "50x50"), '/'
   ="Search Criteria for "
   %i
     ="#{ @product_search.search_name.blank? ? 'unnamed search' : @product_search.search_name }:"
