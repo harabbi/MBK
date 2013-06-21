@@ -54,7 +54,6 @@ now(),
 now()
 from Products_Joined );
 
-delete from `vm_merged_products` where `v_stockstatus` < 1;
 delete from `vm_merged_products` where `v_categoryid` = 0;
 update `vm_merged_products`,`mbk`.`category_map` set `vm_merged_products`.m_category_ids = (select `category_map`.`m_name` from `mbk`.`category_map` where `category_map`.`v_id`=`vm_merged_products`.`v_categoryid`);
 
