@@ -26,7 +26,6 @@ class ProductSearch < ActiveRecord::Base
   end
 
   def search_results
-    puts self.inspect
     search_strings = []
 
     unless self.send(:displaybegindate_max).blank?
