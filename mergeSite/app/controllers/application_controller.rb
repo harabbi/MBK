@@ -67,7 +67,7 @@ class ApplicationController < ActionController::Base
     end
     send_data @product_search.search_results.to_xls(:columns => (Product.xls_attributes + Array.wrap(params[:optional_attributes])),
               :headers => (Product.xls_attributes + Array.wrap(params[:optional_attributes])).collect{|attr| attr.gsub("v_", "").camelize}),
-              :filename => (@product_search.search_name || "products.xls")
+              :filename => (@product_search.search_name || "products") + ".xls"
   end
 
   def upload
@@ -102,12 +102,13 @@ class ApplicationController < ActionController::Base
         end
       end
 
-      @new_products = [] 
-      @updated_products = [] 
-      @unchanged_products = []
-
-      Parallel.each(products) do |product_code, product|
+      results = Parallel.map(products) do |product_code, product|
         ActiveRecord::Base.connection.reconnect!
+
+        errors = []
+        new_products = [] 
+        updated_products = [] 
+        unchanged_products = []
 
         product_obj = ( Product.find_by_v_productcode(product_code.to_s) || Product.new(:v_productcode => product_code) )
 
@@ -133,8 +134,8 @@ class ApplicationController < ActionController::Base
                 product_obj.send( (attr_key + "="), attr_value )
               end
             rescue(NoMethodError)
-              unless @errors.include?("#{attr_key} is not an allowed column name.")
-                @errors.push("#{attr_key} is not an allowed column name.")
+              unless errors.include?("#{attr_key} is not an allowed column name.")
+                errors.push("#{attr_key} is not an allowed column name.")
               end
             end
           end
@@ -142,7 +143,7 @@ class ApplicationController < ActionController::Base
 
         if product_obj.new_record?
           product_obj.mbk_import_new = true
-          @new_products.push product_obj
+          new_products.push product_obj
 
         elsif product_obj.changed?
           product_obj.mbk_import_update = true
@@ -150,15 +151,23 @@ class ApplicationController < ActionController::Base
             !['mbk_import_update', 'mbk_import_new'].include? attr and product_obj.send(attr + '_changed?')
           end.map(&:camelize).join(',').gsub('v_', '')
 
-          @updated_products.push [ product_obj, changed_attrs ]
+          updated_products.push [ product_obj, changed_attrs ]
 
         else
-          @unchanged_products.push product_obj
+          unchanged_products.push product_obj
         end
 
         # Validate the object
-        @errors.push "#{product_code} did not pass validation: #{product_obj.errors.full_messages.join(", ")}" unless product_obj.valid?
-      end 
+        errors.push "#{product_code} did not pass validation: #{product_obj.errors.full_messages.join(", ")}" unless product_obj.valid?
+
+        { :errors => errors, :new => new_products, :updated => updated_products, :unchanged => unchanged_products }
+      end #End of Parallel
+
+      # results = [ {:errors => [], ...}, {:errors => []...} ... ]
+      @errors += results.flat_map{|x| x[:errors] }.compact
+      @new_products = results.flat_map{|x| x[:new] }.compact
+      @updated_products = results.flat_map{|x| x[:updated] }.compact
+      @unchanged_products = results.flat_map{|x| x[:unchanged] }.compact
 
       if @errors.empty?
         Parallel.each(@new_products) do |product|
