@@ -178,7 +178,7 @@ Dir.glob("*.part").each() { |xml_document|
         elsif numeric_column?(cols, x.name)
           s << "#{x.text},"
         elsif datetime_column?(cols, x.name) 
-          s << "'#{Date.strptime(x.text, '%m/%d/%y').strftime("%Y-%m-%d %H:%M:%S")}',"
+          s << "'#{Date.strptime(x.text, '%m/%d/%Y').strftime("%Y-%m-%d %H:%M:%S")}',"
         else
           s << "'#{$con.quote_string(x.text)}',"
         end
