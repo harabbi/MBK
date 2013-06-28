@@ -72,6 +72,10 @@ class ApplicationController < ActionController::Base
 
   def upload
     @errors = []
+    @new_products = [] 
+    @updated_products = [] 
+    @unchanged_products = []
+ 
     uploaded_io = params[:file]
     if uploaded_io.nil?
       @errors.push "No file!"
@@ -102,16 +106,10 @@ class ApplicationController < ActionController::Base
         end
       end
 
-      results = Parallel.map(products) do |product_code, product|
-        ActiveRecord::Base.connection.reconnect!
-
-        errors = []
-        new_products = [] 
-        updated_products = [] 
-        unchanged_products = []
-
+      #results = Parallel.map(products) do |product_code, product|
+        #ActiveRecord::Base.connection.reconnect!
+      products.each do |product_code, product|
         product_obj = ( Product.find_by_v_productcode(product_code.to_s) || Product.new(:v_productcode => product_code) )
-
         product.each do |attr_key, attr_value|
           # Force the value to be a value in the event that it's a formula
           attr_value = attr_value.value if attr_value.is_a? Spreadsheet::Formula
@@ -123,7 +121,7 @@ class ApplicationController < ActionController::Base
           # Update the value if it's different
           if attr_key == "v_stockstatus"
             xls_delta = attr_value.to_i - product_obj.v_stockstatus.to_i
-            v_delta = ( get_v_stockstatus(product_code) || 0 )
+            v_delta =   attr_value.to_i - (get_v_stockstatus(product_code) || 0 )
 
             unless ( xls_delta + v_delta ) == 0
               product_obj.v_stockstatus = (product_obj.send(attr_key).to_i + xls_delta + v_delta)
@@ -135,7 +133,7 @@ class ApplicationController < ActionController::Base
               end
             rescue(NoMethodError)
               unless errors.include?("#{attr_key} is not an allowed column name.")
-                errors.push("#{attr_key} is not an allowed column name.")
+                @errors.push("#{attr_key} is not an allowed column name.")
               end
             end
           end
@@ -143,31 +141,29 @@ class ApplicationController < ActionController::Base
 
         if product_obj.new_record?
           product_obj.mbk_import_new = true
-          new_products.push product_obj
-
+          @new_products.push product_obj
         elsif product_obj.changed?
           product_obj.mbk_import_update = true
           changed_attrs = (product_obj.attribute_names + MbkAttribute.all.map(&:name)).select do |attr|
             !['mbk_import_update', 'mbk_import_new'].include? attr and product_obj.send(attr + '_changed?')
           end.map(&:camelize).join(',').gsub('v_', '')
 
-          updated_products.push [ product_obj, changed_attrs ]
-
+          @updated_products.push [ product_obj, changed_attrs ]
         else
-          unchanged_products.push product_obj
+          @unchanged_products.push product_obj
         end
 
         # Validate the object
-        errors.push "#{product_code} did not pass validation: #{product_obj.errors.full_messages.join(", ")}" unless product_obj.valid?
+        @errors.push "#{product_code} did not pass validation: #{product_obj.errors.full_messages.join(", ")}" unless product_obj.valid?
 
-        { :errors => errors, :new => new_products, :updated => updated_products, :unchanged => unchanged_products }
+        #{ :errors => errors, :new => new_products, :updated => updated_products, :unchanged => unchanged_products }
       end #End of Parallel
 
       # results = [ {:errors => [], ...}, {:errors => []...} ... ]
-      @errors += results.flat_map{|x| x[:errors] }.compact
-      @new_products = results.flat_map{|x| x[:new] }.compact
-      @updated_products = results.flat_map{|x| x[:updated] }.compact
-      @unchanged_products = results.flat_map{|x| x[:unchanged] }.compact
+      #@errors += results.flat_map{|x| x[:errors] }.compact
+      #@new_products = results.flat_map{|x| x[:new] }.compact
+      #@updated_products = results.flat_map{|x| x[:updated] }.compact
+      #@unchanged_products = results.flat_map{|x| x[:unchanged] }.compact
 
       if @errors.empty?
         Parallel.each(@new_products) do |product|
