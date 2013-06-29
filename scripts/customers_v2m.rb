@@ -34,7 +34,7 @@ def formatted_number(number)
       '(%s) %s-%s' % [ digits[0,3].join(""), digits[3,3].join(""), digits[6,4].join("") ]
     end
   rescue
-    return ""
+    return "(55%) 555-5555"
   end
 end
 

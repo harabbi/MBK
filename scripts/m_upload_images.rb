@@ -5,6 +5,7 @@ require 'active_record'
 require 'csv'
 require 'mbk_utils.rb'
 require 'curb'
+require 'RMagick'
 
 ActiveRecord::Base.establish_connection(
   :adapter  => "mysql",
@@ -51,15 +52,24 @@ Product.where("v_productcode > ?",ARGV[0].to_s).pluck('v_productcode').each() { 
       if curl.body_str.size <= 1674 and curl2.body_str.size <= 1674
         system("cp ~/mbk/scripts/noimg.png /tmp/#{s}.jpg")
       else
-        file = File.new("/tmp/#{s}.jpg", "wb")
         if curl.body_str.size > curl2.body_str.size 
+          file = File.new("/tmp/#{s}.gif", "wb")
           file << curl.body_str
+          file.close
+          img =  Magick::Image.read('/tmp/#{s}.gif').first
+          img.write("/tmp/#{s}.jpg")
         else
+          file = File.new("/tmp/#{s}.jpg", "wb")
           file << curl2.body_str
+          file.close
         end
-        file.close
       end
-puts "uploading image #{s}"
+
+if curl.body_str.size <= 1674 and curl2.body_str.size <= 1674
+  puts "cantfind image #{s}" 
+else
+  puts "uploading image #{s}.jpg (#{(curl.body_str.size > curl2.body_str.size) ? curl.body_str.size : curl2.body_str.size})"
+end
       system("ssh #{MBK_MAGENTO_USER}@#{MBK_MAGENTO_HOST} mkdir -p /ebs/home/pwood/mbksite/media/catalog/product/#{s.upcase[0]}/#{s.upcase[1]}")
       scp.upload! "/tmp/#{s}.jpg","/ebs/home/pwood/mbksite/media/catalog/product/#{s.upcase[0]}/#{s.upcase[1]}/"
       system("rm -rf /tmp/#{s}.jpg")
