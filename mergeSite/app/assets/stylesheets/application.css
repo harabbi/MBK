@@ -2,6 +2,10 @@
  *= require_self
  *= require_tree .
  */
+
+table, tbody, tr, td {
+  border-collapse: collapse;
+}
 p {
   padding-left: 10px;
 }

@@ -1,0 +1,49 @@
+%center#flash
+  =flash.map{ |name,msg| msg }.join(', ')
+%p
+  Return
+  =link_to 'home', '/'
+  \.
+%table
+  %tr
+    %td{:style => "border: 2px solid #000;", :id => "attr_form"}
+      %h2{:style => "padding-left: 10px;"} Magento / Grand River Attributes
+      %table{ :style => "table-layout: fixed; margin: auto; width: 100%;" }
+        -MbkAttribute.all.map(&:name).each_slice(5) do |product_attrs|
+          %tr
+            -product_attrs.each do |product_attr|
+              %td{ :style => "padding: 0 20px; text-align: center;" }
+                =product_attr.camelize 
+                -if ProductAttribute.find_by_mbk_attribute_name(product_attr).nil?
+                  =form_tag admin_path, :style => "display: inline;" do
+                    =hidden_field_tag :delete, product_attr
+                    =submit_tag "Delete", :src => "images/delete.png", :type => "image", :height => "20", :confirm => "ARE YOU SURE?!?!?!"
+      %center
+        =form_tag admin_path do
+          =text_field_tag :attr_name
+          =submit_tag 'Add Attribute'
+  %tr
+    %td{:style => "border: 2px solid #000;", :id => "attr_form"}
+      %h2{:style => "padding-left: 10px;"} Scripts
+      %ul
+        -ScriptRunner.all.each do |script|
+          %li
+            =link_to script.name, script_path(script), :confirm => script.confirm_message
+            =" - #{script.description}"
+  %tr
+    %td{:style => "border: 2px solid #000;", :id => "attr_form"}
+      %h2{:style => "padding-left: 10px;"} Log
+      %table{ :style => "table-layout: fixed; margin: auto; width: 100%;" }
+        %tr
+          %td{ :style => "font-weight: bold; padding: 0 10px;" }
+            TIME
+          -@logs.first.attributes.drop(1).each do |attr_name, attr_val|
+            %td{ :style => "font-weight: bold; padding: 0 10px;" }
+              =attr_name.upcase
+        -@logs.each do |log|
+          %tr
+            %td{ :style => "padding: 0 10px; width: 200px;" }
+              =log.tm.strftime("%-m/%d/%Y %I:%M%p")
+            -log.attributes.drop(1).each do |attr_name, attr_val|
+              %td{ :style => "padding: 0 10px;" }
+                =attr_val

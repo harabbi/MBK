@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130317070025) do
+ActiveRecord::Schema.define(:version => 20130701033002) do
 
   create_table "attribute_sets", :force => true do |t|
     t.datetime "created_at", :null => false
@@ -47,6 +47,8 @@ ActiveRecord::Schema.define(:version => 20130317070025) do
     t.datetime "updated_at",          :null => false
   end
 
+  add_index "product_attributes", ["v_productcode"], :name => "v_productcode"
+
   create_table "product_searches", :force => true do |t|
     t.text     "search_name"
     t.text     "productcode"
@@ -69,6 +71,12 @@ ActiveRecord::Schema.define(:version => 20130317070025) do
     t.datetime "updated_at",           :null => false
     t.datetime "displaybegindate_min"
     t.datetime "displaybegindate_max"
+  end
+
+  create_table "script_runners", :force => true do |t|
+    t.string "name"
+    t.string "description"
+    t.string "confirm_message"
   end
 
   create_table "vm_merged_customers", :id => false, :force => true do |t|

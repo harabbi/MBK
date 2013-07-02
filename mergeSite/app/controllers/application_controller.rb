@@ -9,21 +9,6 @@ class ApplicationController < ActionController::Base
 
   protect_from_forgery
   def home
-    if params[:attr_name] and params[:attr_pass]
-      @new_attr = MbkAttribute.new :name => params[:attr_name].downcase.gsub(/\s/,'_')
-      if params[:attr_pass] == "shaneATTRp@55"
-        @new_attr.save
-      else
-        @status = "Wrong Password"
-      end
-    elsif params[:delete]
-      MbkAttribute.find_by_name(params[:attr_name]).delete
-      @status = "Removed #{params[:attr_name]}..."
-      @new_attr = MbkAttribute.new
-    else
-      @new_attr = MbkAttribute.new
-    end
-
     if params[:search_id]
       @product_search = ProductSearch.find_by_id(params[:search_id]) || ProductSearch.new
       render :partial => 'search_form'
@@ -109,7 +94,11 @@ class ApplicationController < ActionController::Base
       #results = Parallel.map(products) do |product_code, product|
         #ActiveRecord::Base.connection.reconnect!
       products.each do |product_code, product|
-        product_obj = ( Product.find_by_v_productcode(product_code.to_s) || Product.new(:v_productcode => product_code) )
+        debugger
+        if (product_obj = Product.find_by_v_productcode(product_code.to_s)).nil?
+          product_obj = Product.new
+          product_obj.v_productcode = product_code.to_s
+        end
         product.each do |attr_key, attr_value|
           # Force the value to be a value in the event that it's a formula
           attr_value = attr_value.value if attr_value.is_a? Spreadsheet::Formula
@@ -121,7 +110,7 @@ class ApplicationController < ActionController::Base
           # Update the value if it's different
           if attr_key == "v_stockstatus"
             xls_delta = attr_value.to_i - product_obj.v_stockstatus.to_i
-            v_delta =   attr_value.to_i - (get_v_stockstatus(product_code) || 0 )
+            v_delta   = attr_value.to_i - (get_v_stockstatus(product_code) || 0 )
 
             unless ( xls_delta + v_delta ) == 0
               product_obj.v_stockstatus = (product_obj.send(attr_key).to_i + xls_delta + v_delta)

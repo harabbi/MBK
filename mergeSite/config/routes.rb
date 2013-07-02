@@ -7,4 +7,8 @@ MergeSite::Application.routes.draw do
   match "/" => "application#upload", :via => :put, :as => :upload
   match "/" => "application#destroy", :via => :delete, :as => :delete
   root :to => 'application#home', :via => [ :get, :post ]
+  scope 'admin' do
+    match "/" => 'admin#home', :via => [ :get, :post ], :as => :admin
+    match "/admin/run_script/:id" => 'admin#run_script', :as => :script
+  end
 end

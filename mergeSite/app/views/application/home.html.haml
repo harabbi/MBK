@@ -1,48 +1,33 @@
+%center#flash
+  =flash.map{ |name,msg| msg }.join(', ')
 #header
   %h1{:style => "text-align: center;"}
     ModelTrainStuff.com Inventory Import/Export Tool
-
+%center
+  Click
+  =link_to 'admin', '/admin'
+  for Shane's Admin Area.
 #search_box
   %table.search_table
     %tr
       %td{:style => "border: 2px solid #000;", :id => "search_form"}
         =render :partial => 'search_form'
 
-      %td
-        %table.search_table
-          %tr
-            %td{:style => "border: 2px solid #000; vertical-align: top; height: 100px;"}
-              %h2{:style => "padding-left: 10px;"}
-                Product/Customer Import
-              =form_tag upload_path, :method => :put, :multipart => true do
-                %p
-                  =file_field_tag 'file', :size => 60
-                  =submit_tag "Upload", :onclick => 'start_spinner()'
-          %tr
-            %td{:style => "border: 2px solid #000;", :id => "attr_form"}
-              %div{ :style => "vertical-align: top;" }
-                %h2{:style => "padding-left: 10px;"}
-                  Magento / Grand River Attributes
-                %h3
-                  %center
-                    =@new_attr.errors.full_messages.join(',')
-                    =@status
-              %div{ :style => "min-height: 160px; text-align: center;" }
-                %table{ :style => "table-layout: fixed; width: 550px;" }
-                  -MbkAttribute.all.map(&:name).each_slice(3) do |product_attrs|
-                    %tr
-                      -product_attrs.each do |product_attr|
-                        %td{ :style => "width: 100%;" }
-                          =product_attr.camelize 
-                          -if ProductAttribute.find_by_mbk_attribute_name(product_attr).nil?
-                            =form_tag root_path, :style => "display: inline;" do
-                              =hidden_field_tag :attr_name, product_attr
-                              =hidden_field_tag :delete
-                              =image_submit_tag("delete.png", :height => "20", :confirm => "ARE YOU SURE?!?!?!")
-              %div{ :style => "vertical-align: bottom; padding: 10px; text-align: center;" }
-                =form_tag root_path do
-                  New: 
-                  =text_field_tag :attr_name
-                  Shane's Password: 
-                  =password_field_tag :attr_pass
-                  =submit_tag 'Add'
+    %tr
+      %td{:style => "border: 2px solid #000; vertical-align: top; height: 100px;"}
+        %h2{:style => "padding-left: 10px;"}
+          Product/Customer Import
+        =form_tag upload_path, :method => :put, :multipart => true do
+          %p
+            =file_field_tag 'file', :size => 60
+            =submit_tag "Upload", :onclick => 'start_spinner()'
+    %tr
+      %td{:style => "border: 2px solid #000;"}
+        %h2{:style => "padding-left: 10px;"}
+          Magento / Grand River Attributes
+        %table{ :style => "table-layout: fixed; margin: auto;" }
+          -MbkAttribute.all.map(&:name).each_slice(5) do |product_attrs|
+            %tr
+              -product_attrs.each do |product_attr|
+                %td{ :style => "padding: 0 20px; text-align: center;" }
+                  =product_attr.camelize 
