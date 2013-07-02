@@ -5,7 +5,7 @@ class AdminController < ActionController::Base
 
   def home
     @new_attr = MbkAttribute.new
-    @logs = Log.first(100)
+    @logs = Log.all
     if params[:attr_name]
       @new_attr = MbkAttribute.new :name => params[:attr_name].downcase.gsub(/\s/,'_')
       if @new_attr.save

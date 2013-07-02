@@ -44,8 +44,8 @@
         %tbody
           -@logs.each do |log|
             %tr
-              %td{ :style => "padding: 0 10px; width: 150px;" }
+              %td{ :style => "white-space: nowrap;" }
                 =log.tm.strftime("%-m/%d/%Y %I:%M%p")
               -log.attributes.drop(1).each do |attr_name, attr_val|
-                %td{ :style => "padding: 0 10px;" }
+                %td
                   =attr_val
