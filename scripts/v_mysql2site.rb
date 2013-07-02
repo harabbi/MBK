@@ -69,6 +69,8 @@ $con.tables.each() do |t|
         r.delete("OptionIDs")
         r.delete("Accessories")
         r.delete("FreeAccessories")
+        r.delete("google_unique_identifier_exists")
+        r.delete("google_adult_product")
       end
 
       s = ""; 
@@ -76,7 +78,7 @@ $con.tables.each() do |t|
       c = get_db_columns(v_import_tbl, t)
       r.keys.size.times() do |cnt|
         if c[(r.keys[cnt]).to_s] == "text" or c[(r.keys[cnt]).to_s].split("(").first.strip == "varchar"
-          s << "\"#{r[(r.keys[cnt]).to_s]}\","
+          s << "\"#{r[(r.keys[cnt]).to_s].to_s.gsub(/"/,"\"\"")}\","
         else
           s << "#{r[(r.keys[cnt]).to_s]},"
         end
@@ -92,6 +94,7 @@ $con.tables.each() do |t|
         end
       end
     end
+
     i.to_i.times() do |cnt|
       ufname = "#{csvdir}/#{t}_#{(cnt+1).to_s}.csv"
       mbkloginfo(__FILE__, "Uploading #{ufname}...")
