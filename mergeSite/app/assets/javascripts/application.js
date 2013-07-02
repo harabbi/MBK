@@ -15,7 +15,14 @@
 //= require_tree .
 
 $(document).ready(function(){
-  $('.preview_search_table').dataTable();
+  if ( $('.log_table').size() == 1 ) {
+    $('.log_table').dataTable( {
+       "aaSorting": [[ 0, "desc" ]],
+       "bRetrieve": "true",
+     } );
+  } else {
+    $('.preview_search_table').dataTable();
+  }
 
   $('#search_search_id').live('change', function() {
     $.ajax({

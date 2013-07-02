@@ -33,17 +33,19 @@
   %tr
     %td{:style => "border: 2px solid #000;", :id => "attr_form"}
       %h2{:style => "padding-left: 10px;"} Log
-      %table{ :style => "table-layout: fixed; margin: auto; width: 100%;" }
-        %tr
-          %td{ :style => "font-weight: bold; padding: 0 10px;" }
-            TIME
-          -@logs.first.attributes.drop(1).each do |attr_name, attr_val|
-            %td{ :style => "font-weight: bold; padding: 0 10px;" }
-              =attr_name.upcase
-        -@logs.each do |log|
+      %table.log_table{ :style => "margin: auto; width: 100%;" }
+        %thead
           %tr
-            %td{ :style => "padding: 0 10px; width: 200px;" }
-              =log.tm.strftime("%-m/%d/%Y %I:%M%p")
-            -log.attributes.drop(1).each do |attr_name, attr_val|
-              %td{ :style => "padding: 0 10px;" }
-                =attr_val
+            %th{ :style => "text-align: left; font-weight: bold; padding: 0 10px;" }
+              TIME
+            -@logs.first.attributes.drop(1).each do |attr_name, attr_val|
+              %th{ :style => "text-align: left; font-weight: bold; padding: 0 10px;" }
+                =attr_name.upcase
+        %tbody
+          -@logs.each do |log|
+            %tr
+              %td{ :style => "padding: 0 10px; width: 150px;" }
+                =log.tm.strftime("%-m/%d/%Y %I:%M%p")
+              -log.attributes.drop(1).each do |attr_name, attr_val|
+                %td{ :style => "padding: 0 10px;" }
+                  =attr_val

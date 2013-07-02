@@ -1,4 +1,5 @@
 class Log < ActiveRecord::Base
+  default_scope order('tm desc')
   self.abstract_class = true
   establish_connection(
     :adapter  => 'mysql2',
