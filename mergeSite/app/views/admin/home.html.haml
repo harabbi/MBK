@@ -6,7 +6,7 @@
   \.
 %table
   %tr
-    %td{:style => "border: 2px solid #000;", :id => "attr_form"}
+    %td{:style => "border: 2px solid #000;", :colspan => 2}
       %h2{:style => "padding-left: 10px;"} Magento / Grand River Attributes
       %table{ :style => "table-layout: fixed; margin: auto; width: 100%;" }
         -MbkAttribute.all.map(&:name).each_slice(5) do |product_attrs|
@@ -23,15 +23,54 @@
           =text_field_tag :attr_name
           =submit_tag 'Add Attribute'
   %tr
-    %td{:style => "border: 2px solid #000;", :id => "attr_form"}
+    %td{:style => "border: 2px solid #000; vertical-align: top; height: 100px;", :colspan => 2}
+      %h2{:style => "padding-left: 10px;"} Product Import
+      =form_tag upload_path, :method => :put, :multipart => true do
+        %p
+          =file_field_tag 'file', :size => 60
+          =submit_tag "Upload", :onclick => 'start_spinner()'
+  %tr
+    %td{:style => "border: 2px solid #000; vertical-align: top; "}
       %h2{:style => "padding-left: 10px;"} Scripts
       %ul
         -ScriptRunner.all.each do |script|
           %li
             =link_to script.name, script_path(script), :confirm => script.confirm_message
             =" - #{script.description}"
+    %td{:style => "border: 2px solid #000; vertical-align: top; "}
+      %h2{:style => "padding-left: 10px;"} Uploads Pending
+      %table{:style => "margin-left: 50px;"}
+        %tr
+          %th
+          %th{:style => "padding: 0 20px;"} Updated
+          %th{:style => "padding: 0 20px;"} New
+        %tr
+          %td Pending Processing
+          %td
+            %center
+              =@staged[:pending][:updated]
+          %td
+            %center
+              =@staged[:pending][:new]
+        %tr
+          %td Volusion Staging Area
+          %td
+            %center
+              =@staged[:volusion][:updated]
+          %td
+            %center
+              =@staged[:volusion][:new]
+        %tr
+          %td Magento Staging Area
+          %td
+            %center
+              =@staged[:magento][:updated]
+          %td
+            %center
+              =@staged[:magento][:new]
+      %p Refresh the page to get updated information.
   %tr
-    %td{:style => "border: 2px solid #000;", :id => "attr_form"}
+    %td{:style => "border: 2px solid #000;", :colspan => 2}
       %h2{:style => "padding-left: 10px;"} Log
       %table.log_table{ :style => "margin: auto; width: 100%;" }
         %thead

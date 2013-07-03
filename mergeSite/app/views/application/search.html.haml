@@ -45,10 +45,8 @@
     ="."
   
 -else
-  #dialog-form{ :style => "display: none;" }
-    %h4
-      Preselected attributes have at least<BR>
-      one product with that attribute.
+  #dialog-form{ :style => "display: none; width: 700px;" }
+    %h4 Preselected attributes have at least one product with that attribute.
     =form_for @product_search, :url => download_path, :method => :get do |f|
       -if @product_search.id
         =hidden_field_tag "search_id", @product_search.id
@@ -57,7 +55,7 @@
           =hidden_field_tag "product_search[#{key}]", value unless value.blank? or @product_search.id
 
       %table{ :style => "width: 100%;" }
-        -MbkAttribute.all.each_slice(2) do |attrs|
+        -MbkAttribute.all.each_slice(4) do |attrs|
           %tr
             -attrs.each do |attr|
               %td

@@ -4,7 +4,7 @@ MergeSite::Application.routes.draw do
   match "/image/:productcode" => "application#change_image", :via => [ :post, :get ], :as => :image
   match "/change_preview" => "application#change_preview", :via => :post, :as => :preview
   match "/reindex" => "application#reindex_magento", :via => :get , :as => :reindex
-  match "/" => "application#upload", :via => :put, :as => :upload
+  match "/" => "admin#upload", :via => :put, :as => :upload
   match "/" => "application#destroy", :via => :delete, :as => :delete
   root :to => 'application#home', :via => [ :get, :post ]
   scope 'admin' do

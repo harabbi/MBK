@@ -1,10 +1,9 @@
-class Log < ActiveRecord::Base
-  default_scope order('tm desc')
+class StagedMagento < ActiveRecord::Base
   self.abstract_class = true
   establish_connection(
     :adapter  => 'mysql2',
-    :database => 'mbk',
+    :database => 'magento',
     :username => 'philz',
     :password => 'asdyuh23')
-  set_table_name 'log'
+  set_table_name 'm_products'
 end

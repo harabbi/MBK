@@ -1,10 +1,9 @@
-class Log < ActiveRecord::Base
-  default_scope order('tm desc')
+class StagedVolusion < ActiveRecord::Base
   self.abstract_class = true
   establish_connection(
     :adapter  => 'mysql2',
-    :database => 'mbk',
+    :database => 'volusion',
     :username => 'philz',
     :password => 'asdyuh23')
-  set_table_name 'log'
+  set_table_name 'Products_Joined'
 end

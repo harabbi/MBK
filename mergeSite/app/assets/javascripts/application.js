@@ -48,6 +48,7 @@ $(document).ready(function(){
 
   $( "#dialog-form" ).dialog({
     autoOpen: false,
+    width: 700,
     height: 500,
     modal: true,
     position: { my: "center", at: "center", of: window },

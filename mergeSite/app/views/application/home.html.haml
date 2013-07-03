@@ -12,15 +12,6 @@
     %tr
       %td{:style => "border: 2px solid #000;", :id => "search_form"}
         =render :partial => 'search_form'
-
-    %tr
-      %td{:style => "border: 2px solid #000; vertical-align: top; height: 100px;"}
-        %h2{:style => "padding-left: 10px;"}
-          Product/Customer Import
-        =form_tag upload_path, :method => :put, :multipart => true do
-          %p
-            =file_field_tag 'file', :size => 60
-            =submit_tag "Upload", :onclick => 'start_spinner()'
     %tr
       %td{:style => "border: 2px solid #000;"}
         %h2{:style => "padding-left: 10px;"}
